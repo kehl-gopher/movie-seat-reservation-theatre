@@ -1,0 +1,4 @@
+package postgres
+
+func ConnectPostgres() {
+}

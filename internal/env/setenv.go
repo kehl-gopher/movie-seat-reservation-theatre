@@ -33,7 +33,7 @@ func LoadEnv() map[string]interface{} {
 	viper.AddConfigPath(".")
 
 	if err := viper.ReadInConfig(); err != nil {
-		viper.SetConfigFile(".env")
+		viper.SetConfigFile(".env") // fall back to .env
 		if err := viper.ReadInConfig(); err != nil {
 			panic(err.Error())
 		}
