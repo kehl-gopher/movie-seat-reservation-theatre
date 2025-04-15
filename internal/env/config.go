@@ -10,13 +10,16 @@ type AppEnv struct {
 
 type Redis struct {
 	RED_CONNSTR string `mapstructure:"red_connstr"`
+	RED_SSLMODE string `mapstructure:"ssl_mode"`
 }
 type Database struct {
-	DBNAME     string `mapstructure:"db_name"`
-	DBPASSWORD string `mapstructure:"db_password"`
-	DBUSER     string `mapstructure:"db_user"`
-	DBHOST     string `mapstructure:"db_host"`
-	DBPORT     string `mapstructure:"db_port"`
+	DBNAME      string `mapstructure:"db_name"`
+	DBPASSWORD  string `mapstructure:"db_password"`
+	DBUSER      string `mapstructure:"db_user"`
+	DBHOST      string `mapstructure:"db_host"`
+	DBPORT      string `mapstructure:"db_port"`
+	DB_SSLMODE  string `mapstructure:"sslmode"`
+	DB_TIMEZONE string `mapstructure:"db_timezone"`
 }
 
 type Config struct {

@@ -1,6 +1,11 @@
 package app
 
-import "github.com/gin-gonic/gin"
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/utility"
+)
 
 type AppStat struct {
 	AppName string `json:"name"`
@@ -8,11 +13,12 @@ type AppStat struct {
 	Env     string `json:"env"`
 }
 
-// will define the application status but for now... it return pong
 func (a *AppStat) AppVersioning(c *gin.Context) {
-	c.JSON(200, gin.H{
+	data := map[string]interface{}{
 		"app_name": a.AppName,
 		"version":  a.Version,
 		"env":      a.Env,
-	})
+	}
+	resp := utility.BuildSuccessResponse(http.StatusOK, "pong", data, nil)
+	c.JSON(http.StatusOK, resp)
 }

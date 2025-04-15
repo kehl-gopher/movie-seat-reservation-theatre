@@ -1,35 +1,40 @@
 package utility
 
-type ErrorResponse struct {
-	StatusCode int    `json:"status_code"`
-	Error      string `json:"error,omitempty"`
-	Message    string `json:"message"`
-	Status     string `json:"status"`
+type Response struct {
+	StatusCode int         `json:"status_code"`
+	Status     string      `json:"status"`
+	Message    string      `json:"message,omitempty"`
+	Error      string      `json:"error,omitempty"`
+	Data       interface{} `json:"data,omitempty"`
+	Pagination interface{} `json:"pagination,omitempty"`
 }
 
-type ValidationErrorResponse struct {
-	StatusCode int    `json:"status_code"`
-	Status     string `json:"status"`
-	Error      []struct {
-		Message string `json:"message"`
-		Error   string `json:"error"`
+// I don't know what to do with this for now actually... it's probably just BS to sheeeeeeeeeeeeeesh
+func BuildErrorResponse(statusCode int, error error, message, status string) Response {
+	return buildResponse(statusCode, status, message, error, nil, nil)
+}
+
+func BuildSuccessResponse(statusCode int, message string, data interface{}, pagination interface{}) Response {
+	return buildResponse(statusCode, "success", message, nil, data, pagination)
+}
+
+func buildResponse(statusCode int, status, message string, err error, data interface{}, pagination interface{}) Response {
+	var errMsg string
+
+	if err != nil {
+		errMsg = err.Error()
 	}
-}
+	if statusCode == 500 {
+		message = "Internal Server Error"
+		status = "error"
+	}
 
-type SuccessResponse struct {
-	StatusCode int                    `json:"status_code"`
-	Status     string                 `json:"status"`
-	Message    string                 `json:"message,omitempty"`
-	Data       map[string]interface{} `json:"data,omitempty"`
-	Pagination map[string]interface{} `json:"pagination,omitempty"`
-}
-
-func BuildValidationErrorResponse(statusCode int, err error, status string, in ...interface{}) []ErrorResponse {
-	return nil
-}
-func BuildErrorResponse(statusCode int, error error, message, status string, in ...interface{}) ErrorResponse {
-	return ErrorResponse{}
-}
-func BuildSuccessResponse(statusCode int, status, message string, data map[string]interface{}, pagination ...map[string]interface{}) SuccessResponse {
-	return SuccessResponse{}
+	return Response{
+		StatusCode: statusCode,
+		Status:     status,
+		Message:    message,
+		Data:       data,
+		Pagination: pagination,
+		Error:      errMsg,
+	}
 }
