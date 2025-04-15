@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/env"
+	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/models/migration"
 	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/repository"
 	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/repository/postgres"
 	"github.com/kehl-gopher/movie-seat-reservation-theatre/pkg/router"
@@ -18,5 +19,8 @@ func main() {
 	}
 
 	db := repository.ConnectDB()
+
+	// run migration for models
+	migration.RunMigrations(db)
 	router.Router(config, db)
 }

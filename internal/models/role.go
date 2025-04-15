@@ -26,9 +26,3 @@ type Role struct {
 	UpdatedAt   time.Time      `json:"updated_at" gorm:"autoUpdateTime"`
 	DeletedAt   gorm.DeletedAt `json:"-" gorm:"index"`
 }
-
-// func (r *RoleName) GetRole() RoleName{
-	
-// }
-
-

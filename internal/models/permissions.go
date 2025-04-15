@@ -1,6 +1,9 @@
 package models
 
 import (
+	"database/sql/driver"
+	"encoding/json"
+	"fmt"
 	"time"
 
 	"gorm.io/gorm"
@@ -9,7 +12,8 @@ import (
 type Permission struct {
 	ID             string         `json:"id" gorm:"primaryKey"`
 	PermissionList PermissionList `gorm:"type:jsonb;not null"`
-	Role           Role           `json:"role_id" gorm:"not null;unique"`
+	RoleID         string         `json:"-" gorm:"not null;unique"`
+	Role           Role           `json:"role_id" gorm:"not null;foreignKey:RoleID;references:ID"`
 	CreatedAt      time.Time      `json:"created_at" gorm:"autoCreateTime"`
 	UpdatedAt      time.Time      `json:"updated_at" gorm:"autoUpdateTime"`
 	DeletedAt      gorm.DeletedAt `json:"-" gorm:"index"`
@@ -34,4 +38,17 @@ type PermissionList struct {
 	CanCreateRoles   bool `json:"can_create_roles"`
 	CanUpdateRoles   bool `json:"can_update_roles"`
 	CanDeleteRoles   bool `json:"can_delete_roles"`
+}
+
+func (j PermissionList) Value() (driver.Value, error) {
+	valueString, err := json.Marshal(j)
+	return valueString, err
+}
+
+func (j *PermissionList) Scan(value interface{}) error {
+	if err := json.Unmarshal(value.([]byte), &j); err != nil {
+		fmt.Println(err.Error())
+		return err
+	}
+	return nil
 }
