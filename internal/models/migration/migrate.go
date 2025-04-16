@@ -16,15 +16,18 @@ func MigrateModel() []interface{} {
 	}
 }
 
-func RunMigrations(db *repository.Database) {
-	AutoMigrate(db.Pdb.DB, MigrateModel()...)
+func RunMigrations(db *repository.Database) error {
+	return AutoMigrate(db.Pdb.DB, MigrateModel()...)
+
 }
 
-func AutoMigrate(db *gorm.DB, models ...interface{}) {
+func AutoMigrate(db *gorm.DB, models ...interface{}) error {
 	err := db.AutoMigrate(models...)
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+		return err
 	}
 
 	fmt.Println("Model migration successful")
+	return nil
 }

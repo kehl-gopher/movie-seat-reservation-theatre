@@ -20,24 +20,33 @@ type Permission struct {
 }
 
 type PermissionList struct {
-	CanCreateMovies  bool `json:"can_create_movies"`
-	CanDeleteMovie   bool `json:"can_delete_movies"`
-	CanUpdateMovie   bool `json:"can_update_movies"`
-	CanGetMovies     bool `json:"can_get_movies"`
-	CanDeleteUsers   bool `json:"can_delete_users"`
-	CanGetUsers      bool `json:"can_get_users"`
-	CanBanUsers      bool `json:"can_ban_users"`
-	CanCreateUsers   bool `json:"can_create_users"`
-	CanBookSeats     bool `json:"can_book_seats"`
-	CanCreateSeats   bool `json:"can_create_seats"`
-	CanRemoveSeats   bool `json:"can_delete_seats"`
-	CanUpdateSeats   bool `json:"can_update_seats"`
-	CanCancelBooking bool `json:"can_cancel_booking"`
-	CanGetBookings   bool `json:"can_get_bookings"`
-	CanGetRoles      bool `json:"can_get_roles"`
-	CanCreateRoles   bool `json:"can_create_roles"`
-	CanUpdateRoles   bool `json:"can_update_roles"`
-	CanDeleteRoles   bool `json:"can_delete_roles"`
+	CanCreateMovies        bool `json:"can_create_movies"`
+	CanDeleteMovie         bool `json:"can_delete_movies"`
+	CanUpdateMovie         bool `json:"can_update_movies"`
+	CanGetMovies           bool `json:"can_get_movies"`
+	CanDeleteUsers         bool `json:"can_delete_users"`
+	CanGetUsers            bool `json:"can_get_users"`
+	CanBanUsers            bool `json:"can_ban_users"`
+	CanCreateUsers         bool `json:"can_create_users"`
+	CanBookSeats           bool `json:"can_book_seats"`
+	CanCreateSeats         bool `json:"can_create_seats"`
+	CanRemoveSeats         bool `json:"can_delete_seats"`
+	CanUpdateSeats         bool `json:"can_update_seats"`
+	CanCancelBooking       bool `json:"can_cancel_booking"`
+	CanGetBookings         bool `json:"can_get_bookings"`
+	CanGetRoles            bool `json:"can_get_roles"`
+	CanCreateRoles         bool `json:"can_create_roles"`
+	CanUpdateRoles         bool `json:"can_update_roles"`
+	CanDeleteRoles         bool `json:"can_delete_roles"`
+	CanCreateTickets       bool `json:"can_create_tickets"`
+	CanBuyTickets          bool `json:"can_buy_tickets"`
+	CanDeleteTickets       bool `json:"can_delete_tickets"`
+	CanViewTickets         bool `json:"can_get_tickets"`
+	CanCancelTickets       bool `json:"can_cancel_tickets"`
+	CanVerifyTickets       bool `json:"can_verify_tickets"`
+	CanBanTickets          bool `json:"can_ban_tickets"`
+	CanRefundTickets       bool `json:"can_refund_tickets"`
+	CanRequestTicketRefund bool `json:"can_request_ticket_refund"`
 }
 
 func (j PermissionList) Value() (driver.Value, error) {
