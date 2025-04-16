@@ -30,6 +30,7 @@ func (s *SeedData) CheckRoleExists() bool {
 
 func (s *SeedData) SeedRole() {
 	var permission models.Permission
+	var roleIDs models.UserRoleID
 
 	roleDescription := []string{
 		"Manages users, theaters, movies, and bookings. Oversees content, handles reports, and ensures smooth platform operations",
@@ -46,6 +47,11 @@ func (s *SeedData) SeedRole() {
 			Description: roleDescription[ind],
 		}
 		if roleName == "admin" {
+			roleIDs = models.UserRoleID{
+				ID:     1,
+				RoleID: role.ID,
+				Role:   role,
+			}
 			permission = models.Permission{
 				ID:     utility.GenerateUUID(),
 				RoleID: role.ID,
@@ -81,6 +87,11 @@ func (s *SeedData) SeedRole() {
 				},
 			}
 		} else if roleName == "user" {
+			roleIDs = models.UserRoleID{
+				ID:     2,
+				RoleID: role.ID,
+				Role:   role,
+			}
 			permission = models.Permission{
 				ID:     utility.GenerateUUID(),
 				RoleID: role.ID,
@@ -120,6 +131,9 @@ func (s *SeedData) SeedRole() {
 			panic(err)
 		}
 		if err := s.Db.Pdb.DB.Create(&permission).Error; err != nil {
+			panic(err)
+		}
+		if err := s.Db.Pdb.DB.Create(&roleIDs).Error; err != nil {
 			panic(err)
 		}
 	}

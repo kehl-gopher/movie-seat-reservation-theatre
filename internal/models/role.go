@@ -7,15 +7,17 @@ import (
 )
 
 type RoleName string
+type RoleIDs uint8
 
 type DefaultRole struct {
-	User  RoleName
-	Admin RoleName
+	User  RoleIDs
+	Admin RoleIDs
 }
 
 var (
-	User  RoleName = "user"
-	Admin RoleName = "admin"
+	User      RoleName = "user"
+	Admin     RoleName = "admin"
+	Anonymous RoleName = "anonymous"
 )
 
 type Role struct {
@@ -25,4 +27,25 @@ type Role struct {
 	CreatedAt   time.Time      `json:"created_at" gorm:"autoCreateTime"`
 	UpdatedAt   time.Time      `json:"updated_at" gorm:"autoUpdateTime"`
 	DeletedAt   gorm.DeletedAt `json:"-" gorm:"index"`
+}
+
+type UserRoleID struct {
+	ID     uint8  `json:"id" gorm:"primaryKey"`
+	RoleID string `json:"role_id" gorm:"not null"`
+	Role   Role   `json:"role" gorm:"not null;foreignKey:RoleID;references:ID"`
+}
+
+func (r RoleIDs) String() RoleName {
+	switch r {
+	case 1:
+		return Admin
+	case 2:
+		return User
+	default:
+		return Anonymous
+	}
+}
+
+func (r *Role) GetUserRoleID(db *gorm.DB) {
+
 }

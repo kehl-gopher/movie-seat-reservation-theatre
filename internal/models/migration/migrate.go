@@ -13,6 +13,7 @@ func MigrateModel() []interface{} {
 		&models.Permission{},
 		&models.Role{},
 		&models.Users{},
+		&models.UserRoleID{},
 	}
 }
 
