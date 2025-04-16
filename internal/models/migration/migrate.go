@@ -14,6 +14,7 @@ func MigrateModel() []interface{} {
 		&models.Role{},
 		&models.Users{},
 		&models.UserRoleID{},
+		&models.AccessToken{},
 	}
 }
 

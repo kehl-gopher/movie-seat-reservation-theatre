@@ -1,7 +1,6 @@
 package user
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -11,7 +10,9 @@ import (
 )
 
 type UserBase struct {
-	DB *repository.Database
+	DB        *repository.Database
+	ExpiresIn int64
+	SecretKey []byte
 }
 
 func (u *UserBase) UserSignUp(ctx *gin.Context) {
@@ -27,7 +28,7 @@ func (u *UserBase) UserSignUp(ctx *gin.Context) {
 		)
 		ctx.JSON(http.StatusUnprocessableEntity, resp)
 	}
-	statusCode, err := auth.UserRequestService(user, *u.DB)
+	statusCode, succResp, err := auth.UserRequestService(user, u.DB, 2, u.ExpiresIn, u.SecretKey)
 
 	if err != nil {
 		switch statusCode {
@@ -39,7 +40,8 @@ func (u *UserBase) UserSignUp(ctx *gin.Context) {
 			resp := utility.BuildErrorResponse(statusCode, err, "error", http.StatusText(statusCode))
 			ctx.JSON(statusCode, resp)
 		}
+		return
 	}
 
-	fmt.Println(statusCode)
+	ctx.JSON(statusCode, succResp)
 }

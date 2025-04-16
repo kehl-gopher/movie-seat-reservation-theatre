@@ -7,19 +7,19 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-type UserInfo struct {
+type AccessTokenClaim struct {
 	ExpiresAt int64
 	UserId    string
-	RoleID    string
+	Role      uint8
 	SecretKey []byte
 }
 
-func (userClaim *UserInfo) CreateNewToken() (string, error) {
+func (userClaim *AccessTokenClaim) CreateNewToken() (string, error) {
 	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"iss":  "movy theatre",
 		"sub":  userClaim.UserId,
-		"role": userClaim.RoleID,
-		"exp":  userClaim.ExpiresAt,
+		"role": userClaim.Role,
+		"exp":  time.Now().Add(time.Duration(userClaim.ExpiresAt) * time.Minute).Unix(),
 		"iat":  time.Now().Unix(),
 	})
 
@@ -31,7 +31,7 @@ func (userClaim *UserInfo) CreateNewToken() (string, error) {
 	return token, nil
 }
 
-func (userClaim *UserInfo) ValidateToken(tokenString string) (jwt.MapClaims, error) {
+func (userClaim *AccessTokenClaim) ValidateToken(tokenString string) (jwt.MapClaims, error) {
 	claims := jwt.MapClaims{}
 
 	token, err := jwt.ParseWithClaims(tokenString, claims, func(t *jwt.Token) (interface{}, error) {

@@ -9,7 +9,7 @@ import (
 var NameRegexPattern = `^[A-Za-z]+$`
 
 func (v *ValidationError) Error() string {
-	return fmt.Sprintf("validation error: %v", v.Errors)
+	return fmt.Sprintf("validation error")
 }
 
 func (v *ValidationError) CheckError() bool {

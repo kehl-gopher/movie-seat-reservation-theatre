@@ -4,8 +4,8 @@ import (
 	"time"
 
 	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/repository"
+	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/repository/postgres"
 	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/utility"
-	"gorm.io/gorm"
 )
 
 type Users struct {
@@ -22,24 +22,61 @@ type Users struct {
 }
 
 type AccessToken struct {
-	ID          string    `json:"id" gorm:"primaryKey"`
+	ID          string    `json:"-" gorm:"primaryKey"`
 	Token       string    `json:"token" gorm:"not null"`
-	Expiry      time.Time `json:"expiry" gorm:"not null"`
-	BlackListed bool      `json:"black_listed" gorm:"default:false"`
-	CreatedAt   time.Time `json:"created_at" gorm:"autoCreateTime"`
-	UpdatedAt   time.Time `json:"updated_at" gorm:"autoUpdateTime"`
-	UserID      string    `json:"user_id" gorm:"not null"`
-	User        Users     `json:"user" gorm:"not null;foreignKey:UserID;references:ID"`
+	Expiry      time.Time `json:"expires_at" gorm:"not null"`
+	BlackListed bool      `json:"-" gorm:"default:false"`
+	CreatedAt   time.Time `json:"-" gorm:"autoCreateTime"`
+	UpdatedAt   time.Time `json:"-" gorm:"autoUpdateTime"`
+	UserID      string    `json:"-" gorm:"not null"`
+	User        Users     `json:"-" gorm:"not null;foreignKey:UserID;references:ID"`
 }
 
-func (u *Users) BeforeCreate(tx *gorm.DB) (err error) {
-	u.ID = utility.GenerateUUID()
-	return
+type UserResponse struct {
+	ID          string      `json:"id"`
+	Email       string      `json:"email"`
+	FirstName   string      `json:"first_name"`
+	LastName    string      `json:"last_name"`
+	Role        uint8       `json:"role"`
+	IsActive    bool        `json:"is_active"`
+	AccessToken AccessToken `json:"access_token"`
 }
 
-func (u *Users) CreateUser(db *repository.Database) error {
-	// if err := postgres.Create(db.Pdb.DB, u); err != nil {
-	// 	return err
-	// }
-	return nil
+func (u *Users) CreateUser(db *repository.Database, uRoleID RoleIDs, exp_in int64, token string) (*UserResponse, error) {
+	if userExist, err := postgres.CheckExists(db.Pdb.DB, `email = ?`, &Users{}, u.Email); err == nil && userExist {
+		v := utility.NewValidationError()
+		v.AddValidationError("email", "already exists")
+		return nil, v
+	} else if err != nil {
+		return nil, err
+	}
+
+	err := postgres.Create(db.Pdb.DB, u)
+
+	if err != nil {
+		return nil, err
+	}
+	accessToken := AccessToken{
+		ID:          utility.GenerateUUID(),
+		BlackListed: false,
+		Token:       token,
+		UserID:      u.ID,
+		User:        *u,
+		Expiry:      time.Now().Add(time.Duration(exp_in) * time.Second),
+	}
+
+	err = postgres.Create(db.Pdb.DB, &accessToken)
+	if err != nil {
+		return nil, err
+	}
+
+	uResponse := &UserResponse{
+		ID:          u.ID,
+		Email:       u.Email,
+		FirstName:   u.FirstName,
+		LastName:    u.LastName,
+		Role:        uint8(uRoleID),
+		AccessToken: accessToken,
+	}
+	return uResponse, nil
 }

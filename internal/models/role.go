@@ -1,8 +1,11 @@
 package models
 
 import (
+	"errors"
+	"strconv"
 	"time"
 
+	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/repository/postgres"
 	"gorm.io/gorm"
 )
 
@@ -46,6 +49,46 @@ func (r RoleIDs) String() RoleName {
 	}
 }
 
-func (r *Role) GetUserRoleID(db *gorm.DB) {
+type UserRoleResponse struct {
+	IDs    RoleIDs `json:"id"`
+	RoleID string  `json:"role_id"`
+}
 
+func GetRoleID(db *gorm.DB, rID RoleIDs) (*UserRoleID, error) {
+	var uRole = &UserRoleID{}
+	query := `id = ?`
+
+	r := strconv.Itoa(int(rID))
+	err := postgres.Preload(db, `Role`, uRole, query, r)
+	if err != nil {
+		if errors.Is(gorm.ErrRecordNotFound, err) {
+			return nil, errors.New("role not found")
+		}
+		return nil, err
+	}
+	return uRole, nil
+}
+
+func GetAllRoleIDs(db *gorm.DB) ([]UserRoleResponse, error) {
+	roles := []UserRoleResponse{}
+	err := postgres.SelectAllRecords(db, "", UserRoleID{}, &roles)
+	if err != nil {
+		if errors.Is(gorm.ErrRecordNotFound, err) {
+			return nil, errors.New("no roles found")
+		}
+		return nil, err
+	}
+	return roles, nil
+}
+
+func GetAllRoles(db *gorm.DB) ([]Role, error) {
+	roles := []Role{}
+	err := postgres.SelectAllRecords(db, "", Role{}, &roles)
+	if err != nil {
+		if errors.Is(gorm.ErrRecordNotFound, err) {
+			return nil, errors.New("no roles found")
+		}
+		return nil, err
+	}
+	return roles, nil
 }

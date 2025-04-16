@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"errors"
+	"fmt"
 
 	"gorm.io/gorm"
 )
@@ -22,12 +23,10 @@ func SelectAllRecords(db *gorm.DB, orderBy string, models interface{}, receiver 
 	return nil
 }
 
-func SelectById(db *gorm.DB, id string, models interface{}, receiver interface{}, ids ...string) error {
-	res := db.Model(models).Where(`id = ?`, id).Find(receiver)
+func SelectById(db *gorm.DB, id interface{}, models interface{}, receiver interface{}) error {
+	res := db.Model(models).Where(`id = ?`, id).First(receiver)
 	if res.Error != nil {
 		return res.Error
-	} else if res.RowsAffected == 0 {
-		return ErrNoRecordFound
 	}
 	return nil
 }
@@ -46,15 +45,19 @@ func CheckExists(db *gorm.DB, query string, models interface{}, args ...interfac
 	var count int64
 	err := db.Model(models).Where(query, args...).Count(&count).Error
 	if err != nil {
+		fmt.Println("------------>")
 		return false, err
 	}
 	return count > 0, nil
 }
 
-func Preload(db *gorm.DB, query, preload string, model interface{}, args ...interface{}) error {
-	err := db.Model(model).Preload(preload, query, args).First(model).Error
-	if err != nil {
-		return err
+func Preload(db *gorm.DB, preload string, model interface{}, args ...interface{}) error {
+	res := db.Model(model).Preload(preload, args).Find(model)
+	if res.Error != nil {
+		fmt.Println(res.Error, "---------->")
+		return res.Error
+	} else if res.RowsAffected == 0 {
+		return errors.New("No record found")
 	}
 	return nil
 }
