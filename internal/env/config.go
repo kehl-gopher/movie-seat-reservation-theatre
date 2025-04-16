@@ -5,6 +5,7 @@ type AppEnv struct {
 	VERSION  string `mapstructure:"app_version"`
 	BASEURL  string `mapstructure:"base_url"`
 	APP_PORT string `mapstructure:"app_port"`
+	APP_HOST string `mapstructure:"app_host"`
 	APP_NAME string `mapstructure:"app_name"`
 }
 

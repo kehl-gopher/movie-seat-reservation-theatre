@@ -1,5 +1,7 @@
 package utility
 
+import "net/http"
+
 type Response struct {
 	StatusCode int         `json:"status_code"`
 	Status     string      `json:"status"`
@@ -9,7 +11,6 @@ type Response struct {
 	Pagination interface{} `json:"pagination,omitempty"`
 }
 
-// I don't know what to do with this for now actually... it's probably just BS to sheeeeeeeeeeeeeesh
 func BuildErrorResponse(statusCode int, error error, message, status string) Response {
 	return buildResponse(statusCode, status, message, error, nil, nil)
 }
@@ -37,4 +38,20 @@ func buildResponse(statusCode int, status, message string, err error, data inter
 		Pagination: pagination,
 		Error:      errMsg,
 	}
+}
+
+type ValidationError struct {
+	Response
+	Errors map[string]string `json:"errors"`
+}
+
+func NewValidationError() *ValidationError {
+	return &ValidationError{}
+}
+
+func ValidationErrorResponse(errors map[string]string, v *ValidationError) *ValidationError {
+	v.Response.StatusCode = http.StatusUnprocessableEntity
+	v.Response.Status = http.StatusText(http.StatusUnprocessableEntity)
+	v.Response.Message = "validation error"
+	return v
 }

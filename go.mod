@@ -3,8 +3,10 @@ module github.com/kehl-gopher/movie-seat-reservation-theatre
 go 1.23.5
 
 require (
+	github.com/alexedwards/argon2id v1.0.0
 	github.com/gin-gonic/gin v1.10.0
 	github.com/go-viper/mapstructure/v2 v2.2.1
+	github.com/google/uuid v1.6.0
 	github.com/spf13/viper v1.20.1
 	gorm.io/driver/postgres v1.5.11
 	gorm.io/gorm v1.25.12
