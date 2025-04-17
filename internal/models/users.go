@@ -1,7 +1,6 @@
 package models
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/repository"
@@ -86,7 +85,6 @@ func (u *Users) CreateAccessToken(db *gorm.DB, secret_key []byte, expires_in int
 	if err != nil {
 		return AccessToken{}, err
 	}
-	fmt.Println(u.ID)
 	accessToken := AccessToken{
 		ID:          utility.GenerateUUID(),
 		BlackListed: false,

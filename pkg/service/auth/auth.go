@@ -82,9 +82,16 @@ func AuthenticateUser(db *repository.Database, email, password string, secret_ke
 	}
 	u, err := user.GetUserByEmail(db)
 
+	if err != nil || u == nil {
+		if errors.Is(postgres.ErrNoRecordFound, err) || u == nil {
+			return http.StatusBadRequest, nil, errors.New("invalid email or password")
+		}
+		return http.StatusInternalServerError, nil, err
+
+	}
 	checkPasswordHash, err := utility.VerifyPasswordHash(password, u.Password)
 	if err != nil || !checkPasswordHash {
-		if errors.Is(postgres.ErrNoRecordFound, err) || !checkPasswordHash {
+		if !checkPasswordHash {
 			return http.StatusBadRequest, nil, errors.New("invalid email or password")
 		}
 		return http.StatusInternalServerError, nil, err
@@ -96,6 +103,5 @@ func AuthenticateUser(db *repository.Database, email, password string, secret_ke
 		return http.StatusInternalServerError, nil, err
 	}
 
-	// check password hash
 	return http.StatusOK, uRep, nil
 }
