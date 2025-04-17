@@ -2,6 +2,7 @@ package utility
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -16,11 +17,10 @@ type AccessTokenClaim struct {
 
 func (userClaim *AccessTokenClaim) CreateNewToken() (string, error) {
 	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"iss":  "movy theatre",
-		"sub":  userClaim.UserId,
-		"role": userClaim.Role,
-		"exp":  time.Now().Add(time.Duration(userClaim.ExpiresAt) * time.Minute).Unix(),
-		"iat":  time.Now().Unix(),
+		"iss":     "movy theatre",
+		"user_id": userClaim.UserId,
+		"role":    userClaim.Role,
+		"exp":     time.Now().AddDate(0, 0, int(userClaim.ExpiresAt)).Unix(),
 	})
 
 	token, err := claims.SignedString(userClaim.SecretKey)
@@ -31,24 +31,31 @@ func (userClaim *AccessTokenClaim) CreateNewToken() (string, error) {
 	return token, nil
 }
 
-func (userClaim *AccessTokenClaim) ValidateToken(tokenString string) (jwt.MapClaims, error) {
-	claims := jwt.MapClaims{}
-
-	token, err := jwt.ParseWithClaims(tokenString, claims, func(t *jwt.Token) (interface{}, error) {
+func (userClaim *AccessTokenClaim) ValidateToken(tokenString string) (*jwt.Token, error) {
+	token, err := jwt.Parse(tokenString, func(t *jwt.Token) (interface{}, error) {
+		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, errors.New(fmt.Sprintf("unexpected signing method %v", t.Header["alg"]))
+		}
 		return userClaim.SecretKey, nil
 	})
 
 	if err != nil {
-		return nil, err
+		return nil, errors.New("invalid token provided")
 	}
 
-	if !token.Valid {
-		return nil, errors.New("invalid error token provided")
-	}
+	return token, err
+}
 
-	if iss, ok := claims["iss"]; !ok || iss != "movy theatre" {
-		return nil, errors.New("invalid issuer")
+func (userClaim *AccessTokenClaim) ExtractClaims(tokenString string) (string, uint8, error) {
+	token, err := userClaim.ValidateToken(tokenString)
+	if err != nil {
+		return "", 0, err
 	}
-
-	return claims, err
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		userId := claims["user_id"].(string)
+		role := uint8(claims["role"].(float64))
+		fmt.Println("---------->")
+		return userId, uint8(role), nil
+	}
+	return "", 0, errors.New("invalid token provided")
 }

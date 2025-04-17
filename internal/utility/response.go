@@ -55,3 +55,7 @@ func ValidationErrorResponse(errors map[string]string, v *ValidationError) *Vali
 	v.Response.Message = "validation error"
 	return v
 }
+
+func UnAuthorizedResponse(statusCode int, message string, status string) Response {
+	return buildResponse(statusCode, status, message, nil, nil, nil)
+}

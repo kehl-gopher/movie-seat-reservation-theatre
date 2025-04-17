@@ -1,6 +1,7 @@
 package user
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -75,4 +76,17 @@ func (u *UserBase) UserSignIn(ctx *gin.Context) {
 	}
 	sresp := utility.BuildSuccessResponse(statusCode, "success", data, nil)
 	ctx.JSON(statusCode, sresp)
+}
+
+func (u *UserBase) SignUp(c *gin.Context) {
+
+	user, exists := c.Get("user")
+
+	if !exists {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "User not found"})
+		return
+	}
+
+	fmt.Printf("%+v", user.(models.Users))
+	c.JSON(http.StatusOK, gin.H{"message": "SignUp"})
 }

@@ -145,3 +145,23 @@ func (u *Users) CreateUserSignInTokekn(db *repository.Database, secret_key []byt
 	}
 	return uResponse, nil
 }
+
+func (u *Users) UserContextObject(db *repository.Database, id string, rId RoleIDs) (*Users, error) {
+
+	return &Users{
+		ID:        u.ID,
+		Email:     u.Email,
+		FirstName: u.FirstName,
+		LastName:  u.LastName,
+	}, nil
+}
+
+func (u *Users) PreloadUserRole(db *repository.Database, rId RoleIDs) (*Users, error) {
+	var user = &Users{}
+	query := `id = ?`
+	err := postgres.Preload(db.Pdb.DB, `Role`, user, query, u.ID)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
+}
