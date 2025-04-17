@@ -23,6 +23,17 @@ func SelectAllRecords(db *gorm.DB, orderBy string, models interface{}, receiver 
 	return nil
 }
 
+func SelectSingleRecord(db *gorm.DB, query string, model interface{}, receiver interface{}, args ...interface{}) error {
+	err := db.Model(model).Where(query, args).First(receiver).Error
+	if err != nil {
+		if errors.Is(gorm.ErrRecordNotFound, err) {
+			return ErrNoRecordFound
+		}
+		return err
+	}
+	return nil
+}
+
 func SelectById(db *gorm.DB, id interface{}, models interface{}, receiver interface{}) error {
 	res := db.Model(models).Where(`id = ?`, id).First(receiver)
 	if res.Error != nil {

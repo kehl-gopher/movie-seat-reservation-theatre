@@ -26,8 +26,8 @@ func buildResponse(statusCode int, status, message string, err error, data inter
 		errMsg = err.Error()
 	}
 	if statusCode == 500 {
-		message = "Internal Server Error"
-		status = "error"
+		message = "error"
+		errMsg = "Internal Server Error"
 	}
 
 	return Response{

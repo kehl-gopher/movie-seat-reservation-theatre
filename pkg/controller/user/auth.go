@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/models"
 	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/repository"
 	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/utility"
 	"github.com/kehl-gopher/movie-seat-reservation-theatre/pkg/service/auth"
@@ -21,14 +22,14 @@ func (u *UserBase) UserSignUp(ctx *gin.Context) {
 
 	if err != nil {
 		resp := utility.BuildErrorResponse(
-			http.StatusUnprocessableEntity,
-			err,
-			"validation error",
+			http.StatusBadRequest, err, "error",
 			http.StatusText(http.StatusUnprocessableEntity),
 		)
 		ctx.JSON(http.StatusUnprocessableEntity, resp)
+		return
 	}
-	statusCode, succResp, err := auth.UserRequestService(user, u.DB, 2, u.ExpiresIn, u.SecretKey)
+	roleId := 2 // role id for user
+	statusCode, succResp, err := auth.UserRequestService(user, u.DB, models.RoleIDs(roleId), u.ExpiresIn, u.SecretKey)
 
 	if err != nil {
 		switch statusCode {
@@ -43,5 +44,35 @@ func (u *UserBase) UserSignUp(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(statusCode, succResp)
+	resp := utility.BuildSuccessResponse(statusCode, "success", succResp, nil)
+	ctx.JSON(statusCode, resp)
+}
+
+func (u *UserBase) UserSignIn(ctx *gin.Context) {
+	var user struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+
+	err := ctx.ShouldBindJSON(&user)
+
+	if err != nil {
+		resp := utility.BuildErrorResponse(
+			http.StatusBadRequest, err, "error",
+			http.StatusText(http.StatusUnprocessableEntity),
+		)
+		ctx.JSON(http.StatusUnprocessableEntity, resp)
+		return
+	}
+
+	roleID := 2 // user role id
+	statusCode, data, err := auth.AuthenticateUser(u.DB, user.Email, user.Password, u.SecretKey, u.ExpiresIn, models.RoleIDs(roleID))
+
+	if err != nil {
+		eresp := utility.BuildErrorResponse(statusCode, err, "error", http.StatusText(statusCode))
+		ctx.JSON(statusCode, eresp)
+		return
+	}
+	sresp := utility.BuildSuccessResponse(statusCode, "success", data, nil)
+	ctx.JSON(statusCode, sresp)
 }

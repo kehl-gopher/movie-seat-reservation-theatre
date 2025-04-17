@@ -6,6 +6,7 @@ import (
 
 	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/models"
 	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/repository"
+	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/repository/postgres"
 	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/utility"
 	"gorm.io/gorm"
 )
@@ -62,18 +63,7 @@ func UserRequestService(user UserAuthRequest, db *repository.Database, rIDs mode
 		Role:      uRoleID.Role,
 	}
 
-	claims := utility.AccessTokenClaim{
-		UserId:    u.ID,
-		Role:      uint8(rIDs),
-		SecretKey: secret_key,
-		ExpiresAt: expires_in,
-	}
-	token, err := claims.CreateNewToken()
-	if err != nil {
-		return http.StatusInternalServerError, nil, err
-	}
-	userResponse, err := u.CreateUser(db, rIDs, expires_in, token)
-
+	userResponse, err := u.CreateUser(db, rIDs, expires_in, secret_key)
 	if err != nil {
 		if err.Error() == "validation error" {
 			return http.StatusUnprocessableEntity, nil, err
@@ -83,4 +73,29 @@ func UserRequestService(user UserAuthRequest, db *repository.Database, rIDs mode
 		return http.StatusInternalServerError, nil, err
 	}
 	return http.StatusCreated, userResponse, nil
+}
+
+func AuthenticateUser(db *repository.Database, email, password string, secret_key []byte, exp_in int64, rID models.RoleIDs) (int, *models.UserResponse, error) {
+	user := models.Users{
+		Email:    email,
+		Password: password,
+	}
+	u, err := user.GetUserByEmail(db)
+
+	checkPasswordHash, err := utility.VerifyPasswordHash(password, u.Password)
+	if err != nil || !checkPasswordHash {
+		if errors.Is(postgres.ErrNoRecordFound, err) || !checkPasswordHash {
+			return http.StatusBadRequest, nil, errors.New("invalid email or password")
+		}
+		return http.StatusInternalServerError, nil, err
+	}
+
+	uRep, err := u.CreateUserSignInTokekn(db, secret_key, exp_in, rID)
+
+	if err != nil {
+		return http.StatusInternalServerError, nil, err
+	}
+
+	// check password hash
+	return http.StatusOK, uRep, nil
 }

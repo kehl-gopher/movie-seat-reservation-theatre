@@ -1,11 +1,13 @@
 package models
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/repository"
 	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/repository/postgres"
 	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/utility"
+	"gorm.io/gorm"
 )
 
 type Users struct {
@@ -42,7 +44,7 @@ type UserResponse struct {
 	AccessToken AccessToken `json:"access_token"`
 }
 
-func (u *Users) CreateUser(db *repository.Database, uRoleID RoleIDs, exp_in int64, token string) (*UserResponse, error) {
+func (u *Users) CreateUser(db *repository.Database, uRoleID RoleIDs, exp_in int64, secret_key []byte) (*UserResponse, error) {
 	if userExist, err := postgres.CheckExists(db.Pdb.DB, `email = ?`, &Users{}, u.Email); err == nil && userExist {
 		v := utility.NewValidationError()
 		v.AddValidationError("email", "already exists")
@@ -56,26 +58,91 @@ func (u *Users) CreateUser(db *repository.Database, uRoleID RoleIDs, exp_in int6
 	if err != nil {
 		return nil, err
 	}
-	accessToken := AccessToken{
-		ID:          utility.GenerateUUID(),
-		BlackListed: false,
-		Token:       token,
-		UserID:      u.ID,
-		User:        *u,
-		Expiry:      time.Now().Add(time.Duration(exp_in) * time.Second),
-	}
 
-	err = postgres.Create(db.Pdb.DB, &accessToken)
+	accessToken, err := u.CreateAccessToken(db.Pdb.DB, secret_key, exp_in, uRoleID)
 	if err != nil {
 		return nil, err
 	}
-
 	uResponse := &UserResponse{
 		ID:          u.ID,
 		Email:       u.Email,
 		FirstName:   u.FirstName,
 		LastName:    u.LastName,
 		Role:        uint8(uRoleID),
+		IsActive:    u.IsActive,
+		AccessToken: accessToken,
+	}
+	return uResponse, nil
+}
+
+func (u *Users) CreateAccessToken(db *gorm.DB, secret_key []byte, expires_in int64, rIDs RoleIDs) (AccessToken, error) {
+	claims := utility.AccessTokenClaim{
+		UserId:    u.ID,
+		Role:      uint8(rIDs),
+		SecretKey: secret_key,
+		ExpiresAt: expires_in,
+	}
+	token, err := claims.CreateNewToken()
+	if err != nil {
+		return AccessToken{}, err
+	}
+	fmt.Println(u.ID)
+	accessToken := AccessToken{
+		ID:          utility.GenerateUUID(),
+		BlackListed: false,
+		Token:       token,
+		UserID:      u.ID,
+		User:        *u,
+		Expiry:      time.Now().Add(time.Duration(expires_in) * time.Second),
+	}
+
+	// check if user token exists if its does delete and create a new one
+	query := "user_id = ?"
+	err = postgres.DeleteSingleRecord(db, query, &AccessToken{}, u.ID)
+	if err != nil {
+		return AccessToken{}, err
+	}
+	err = postgres.Create(db, &accessToken)
+	if err != nil {
+		return AccessToken{}, err
+	}
+
+	return accessToken, nil
+}
+
+func (u *Users) GetUserByEmail(db *repository.Database) (*Users, error) {
+	var user = &Users{}
+
+	query := `email = ?`
+	err := postgres.SelectSingleRecord(db.Pdb.DB, query, &Users{}, user, u.Email)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
+}
+
+func (u *Users) GetUserById(db *repository.Database) (*Users, error) {
+	var user = &Users{}
+	err := postgres.SelectById(db.Pdb.DB, u.ID, &Users{}, user)
+
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
+}
+
+func (u *Users) CreateUserSignInTokekn(db *repository.Database, secret_key []byte, exp_in int64, uRoleID RoleIDs) (*UserResponse, error) {
+	accessToken, err := u.CreateAccessToken(db.Pdb.DB, secret_key, exp_in, uRoleID)
+	if err != nil {
+		return nil, err
+	}
+	uResponse := &UserResponse{
+		ID:          u.ID,
+		Email:       u.Email,
+		FirstName:   u.FirstName,
+		LastName:    u.LastName,
+		Role:        uint8(uRoleID),
+		IsActive:    u.IsActive,
 		AccessToken: accessToken,
 	}
 	return uResponse, nil
