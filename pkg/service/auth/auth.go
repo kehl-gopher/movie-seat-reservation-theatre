@@ -18,13 +18,15 @@ type UserAuthRequest struct {
 	Password  string `json:"password"`
 }
 
-func ValidateUserAuthRequest(email, firstName, lastName, password string) (string, string, string, string, error) {
+func ValidateUserAuthRequest(email, firstName, lastName, password string, rId models.RoleIDs) (string, string, string, string, error) {
 	v := utility.NewValidationError()
 
-	firstName = v.ValidateName(firstName, "first_name")
+	if rId.String() == models.User {
+		firstName = v.ValidateName(firstName, "first_name")
+		lastName = v.ValidateName(lastName, "last_name")
+	}
 	password = v.ValidatePassword(password)
 	email = v.ValidateEmailAddress(email)
-	lastName = v.ValidateName(lastName, "last_name")
 
 	if v.CheckError() {
 		return "", "", "", "", v
@@ -33,7 +35,7 @@ func ValidateUserAuthRequest(email, firstName, lastName, password string) (strin
 }
 
 func UserRequestService(user UserAuthRequest, db *repository.Database, rIDs models.RoleIDs, expires_in int64, secret_key []byte) (int, *models.UserResponse, error) {
-	firstName, email, lastName, password, err := ValidateUserAuthRequest(user.Email, user.FirstName, user.LastName, user.Password)
+	firstName, email, lastName, password, err := ValidateUserAuthRequest(user.Email, user.FirstName, user.LastName, user.Password, rIDs)
 	if err != nil {
 		return http.StatusUnprocessableEntity, nil, err
 	}
@@ -55,8 +57,8 @@ func UserRequestService(user UserAuthRequest, db *repository.Database, rIDs mode
 	u := models.Users{
 		ID:        utility.GenerateUUID(),
 		Email:     email,
-		FirstName: firstName,
-		LastName:  lastName,
+		FirstName: &firstName,
+		LastName:  &lastName,
 		Password:  password,
 		IsActive:  true,
 		RoleID:    uRoleID.RoleID,

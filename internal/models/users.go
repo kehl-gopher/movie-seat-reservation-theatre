@@ -12,8 +12,8 @@ import (
 type Users struct {
 	ID        string    `json:"id" gorm:"primaryKey"`
 	Email     string    `json:"email" gorm:"unique;not null"`
-	FirstName string    `json:"first_name" gorm:"not null"`
-	LastName  string    `json:"last_name" gorm:"not null"`
+	FirstName *string   `json:"first_name" gorm:"type:text"`
+	LastName  *string   `json:"last_name" gorm:"type:text"`
 	Password  string    `json:"-" gorm:"not null"`
 	RoleID    string    `json:"-" gorm:"not null"`
 	Role      Role      `json:"role_id" gorm:"not null;foreignKey:RoleID;references:ID"`
@@ -65,8 +65,8 @@ func (u *Users) CreateUser(db *repository.Database, uRoleID RoleIDs, exp_in int6
 	uResponse := &UserResponse{
 		ID:          u.ID,
 		Email:       u.Email,
-		FirstName:   u.FirstName,
-		LastName:    u.LastName,
+		FirstName:   *u.FirstName,
+		LastName:    *u.LastName,
 		Role:        uint8(uRoleID),
 		IsActive:    u.IsActive,
 		AccessToken: accessToken,
@@ -137,8 +137,8 @@ func (u *Users) CreateUserSignInTokekn(db *repository.Database, secret_key []byt
 	uResponse := &UserResponse{
 		ID:          u.ID,
 		Email:       u.Email,
-		FirstName:   u.FirstName,
-		LastName:    u.LastName,
+		FirstName:   *u.FirstName,
+		LastName:    *u.LastName,
 		Role:        uint8(uRoleID),
 		IsActive:    u.IsActive,
 		AccessToken: accessToken,
@@ -164,4 +164,13 @@ func (u *Users) PreloadUserRole(db *repository.Database, rId RoleIDs) (*Users, e
 		return nil, err
 	}
 	return user, nil
+}
+
+func (u *Users) UserDeactivated(db *repository.Database) (bool, error) {
+	query := `id = ? and is_active = ?`
+	exists, err := postgres.CheckExists(db.Pdb.DB, query, &Users{}, u.ID, false)
+	if err != nil {
+		return exists, err
+	}
+	return exists, nil
 }

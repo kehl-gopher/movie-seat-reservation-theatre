@@ -78,15 +78,49 @@ func (u *UserBase) UserSignIn(ctx *gin.Context) {
 	ctx.JSON(statusCode, sresp)
 }
 
+func (u *UserBase) AdminSignUp(c *gin.Context) {
+	user := auth.UserAuthRequest{}
+	err := c.ShouldBindJSON(&user)
+	if err != nil {
+		fmt.Println(err)
+		resp := utility.BuildErrorResponse(
+			http.StatusBadRequest, err, "error",
+			http.StatusText(http.StatusUnprocessableEntity),
+		)
+		c.JSON(http.StatusUnprocessableEntity, resp)
+		return
+	}
+
+	roleId := 1
+
+	statusCode, succResp, err := auth.UserRequestService(user, u.DB, models.RoleIDs(roleId), u.ExpiresIn, u.SecretKey)
+	if err != nil {
+		switch statusCode {
+		case http.StatusUnprocessableEntity:
+			v := err.(*utility.ValidationError)
+			resp := utility.ValidationErrorResponse(v.Errors, v) // handle validation error logic
+			c.JSON(statusCode, resp)
+		default:
+			resp := utility.BuildErrorResponse(statusCode, err, "error", http.StatusText(statusCode))
+			c.JSON(statusCode, resp)
+		}
+		return
+	}
+
+	resp := utility.BuildSuccessResponse(statusCode, "success", succResp, nil)
+	c.JSON(statusCode, resp)
+}
+
+func (u *UserBase) AdminSignIn(c *gin.Context) {
+
+}
+
 func (u *UserBase) SignUp(c *gin.Context) {
-
 	user, exists := c.Get("user")
-
 	if !exists {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "User not found"})
 		return
 	}
-
 	fmt.Printf("%+v", user.(models.Users))
 	c.JSON(http.StatusOK, gin.H{"message": "SignUp"})
 }

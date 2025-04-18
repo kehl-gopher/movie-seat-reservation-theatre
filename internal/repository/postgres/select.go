@@ -56,7 +56,6 @@ func CheckExists(db *gorm.DB, query string, models interface{}, args ...interfac
 	var count int64
 	err := db.Model(models).Where(query, args...).Count(&count).Error
 	if err != nil {
-		fmt.Println("------------>")
 		return false, err
 	}
 	return count > 0, nil
