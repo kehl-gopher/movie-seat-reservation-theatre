@@ -19,13 +19,14 @@ func AuthRoutes(router *gin.Engine, config *env.Config, DB *repository.Database)
 		userRoutes.POST("/register", userR.UserSignUp)
 		userRoutes.POST("/login", userR.UserSignIn)
 	}
-	routesP := router.Group(fmt.Sprintf("%s", config.BASEURL), middleware.AuthMiddleWare(config.SECRET_KEY, DB))
-	{
-		routesP.POST("/signup", userR.SignUp)
-	}
 	adminP := router.Group(fmt.Sprintf("%s/auth", config.BASEURL))
 	{
 		adminP.POST("/admin/register", userR.AdminSignUp)
+		adminP.POST("/admin/signin", userR.AdminSignIn)
+	}
+	routesP := router.Group(fmt.Sprintf("%s", config.BASEURL), middleware.AuthMiddleWare(config.SECRET_KEY, DB))
+	{
+		routesP.POST("/signup", userR.SignUp)
 	}
 
 }
