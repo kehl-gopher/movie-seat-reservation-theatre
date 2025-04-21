@@ -128,13 +128,15 @@ func (s *SeedData) SeedRole() {
 			}
 		}
 		if err := s.Db.Pdb.DB.Create(&role).Error; err != nil {
-			panic(err)
+
 		}
 		if err := s.Db.Pdb.DB.Create(&permission).Error; err != nil {
-			panic(err)
+
 		}
 		if err := s.Db.Pdb.DB.Create(&roleIDs).Error; err != nil {
-			panic(err)
+			fmt.Println(err)
+		} else {
+			fmt.Printf("Role %s seeded successfully\n", roleName)
 		}
 	}
 

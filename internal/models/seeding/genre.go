@@ -37,8 +37,8 @@ var GenreCount int64
 
 func (s *SeedData) CheckGenreExists() bool {
 	s.Db.Pdb.DB.Model(&models.Genre{}).Where("name IN (?)", Genre).Count(&GenreCount)
-	fmt.Println(GenreCount)
-	return GenreCount > 0
+	genreCount := int64(len(Genre))
+	return GenreCount == genreCount
 }
 
 // SeedGenre seeds the database with genre data
@@ -49,7 +49,8 @@ func (s *SeedData) SeedGenre() {
 			Name: genreName,
 		}
 		if err := s.Db.Pdb.DB.Create(&genre).Error; err != nil {
-			panic(err)
+			continue // skip if error occurs
 		}
 	}
+	fmt.Println("Genre seeded successfully...")
 }
