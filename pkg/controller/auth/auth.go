@@ -1,4 +1,4 @@
-package user
+package auth
 
 import (
 	"fmt"
@@ -17,16 +17,16 @@ type UserBase struct {
 	SecretKey []byte
 }
 
-func (u *UserBase) UserSignUp(ctx *gin.Context) {
+func (u *UserBase) SignUp(ctx *gin.Context) {
 	var user auth.UserAuthRequest
 	err := ctx.ShouldBindJSON(&user)
 
 	if err != nil {
 		resp := utility.BuildErrorResponse(
 			http.StatusBadRequest, err, "error",
-			http.StatusText(http.StatusUnprocessableEntity),
+			http.StatusText(http.StatusBadRequest),
 		)
-		ctx.JSON(http.StatusUnprocessableEntity, resp)
+		ctx.JSON(http.StatusBadRequest, resp)
 		return
 	}
 	roleId := 2 // role id for user
@@ -49,7 +49,7 @@ func (u *UserBase) UserSignUp(ctx *gin.Context) {
 	ctx.JSON(statusCode, resp)
 }
 
-func (u *UserBase) UserSignIn(ctx *gin.Context) {
+func (u *UserBase) SignIn(ctx *gin.Context) {
 	var user struct {
 		Email    string `json:"email"`
 		Password string `json:"password"`
@@ -111,11 +111,8 @@ func (u *UserBase) AdminSignUp(c *gin.Context) {
 	c.JSON(statusCode, resp)
 }
 
-func (u *UserBase) AdminSignIn(c *gin.Context) {
-
-}
-
-func (u *UserBase) SignUp(c *gin.Context) {
+// TODO: implement a proper sign up for user
+func (u *UserBase) SignOut(c *gin.Context) {
 	user, exists := c.Get("user")
 	if !exists {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "User not found"})

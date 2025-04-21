@@ -12,26 +12,32 @@ import (
 )
 
 type UserAuthRequest struct {
-	Email     string `json:"email"`
+	Email     string  `json:"email"`
 	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	Password  string `json:"password"`
+	LastName  *string `json:"last_name"`
+	Password  string  `json:"password"`
 }
 
-func ValidateUserAuthRequest(email, firstName, lastName, password string, rId models.RoleIDs) (string, string, string, string, error) {
+func ValidateUserAuthRequest(email string, firstName string, lastName *string, password string, rId models.RoleIDs) (string, string, string, string, error) {
+	var firstname, lastname string
 	v := utility.NewValidationError()
 
-	if rId.String() == models.User {
-		firstName = v.ValidateName(firstName, "first_name")
-		lastName = v.ValidateName(lastName, "last_name")
+	if rId.String() == models.User  && lastName != nil {
+		lastname = v.ValidateName(*lastName, "last_name")
 	}
+
+	if rId.String() == models.Admin && lastName != nil { // last name optional for admin
+		lastname = v.ValidateName(*lastName, "last_name")
+	}
+
+	firstname = v.ValidateName(firstName, "first_name")
 	password = v.ValidatePassword(password)
 	email = v.ValidateEmailAddress(email)
 
 	if v.CheckError() {
 		return "", "", "", "", v
 	}
-	return firstName, email, lastName, password, nil
+	return firstname, email, lastname, password, nil
 }
 
 func UserRequestService(user UserAuthRequest, db *repository.Database, rIDs models.RoleIDs, expires_in int64, secret_key []byte) (int, *models.UserResponse, error) {

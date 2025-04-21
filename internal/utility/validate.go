@@ -56,7 +56,7 @@ func (v *ValidationError) ValidatePassword(password string) string {
 
 func (v *ValidationError) ValidateName(name string, tag string) string {
 	if name == "" {
-		v.AddValidationError(tag, fmt.Sprintf("%s is empty", tag))
+		v.AddValidationError(tag, fmt.Sprintf("%s is required", tag))
 		return ""
 	} else if len(name) < 3 {
 		v.AddValidationError(tag, fmt.Sprintf("%s length is short", tag))
