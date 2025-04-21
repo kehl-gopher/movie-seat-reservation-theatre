@@ -1,20 +1,17 @@
 package postgres
 
 import (
-	"errors"
 	"fmt"
-	"strconv"
 
 	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/env"
 	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/repository"
+	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/utility"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
 func ConnectPostgres(config *env.Config) (*gorm.DB, error) {
-	// verify connection port
-
-	port, err := verifyPort(config.DBPORT)
+	port, err := utility.VerifyPort(config.DBPORT)
 
 	if err != nil {
 		return nil, err
@@ -43,18 +40,4 @@ func connectionPostgres(dbName, host, password, user, sslmode, timezone string, 
 	}
 
 	return db, nil
-}
-
-func verifyPort(port string) (int, error) {
-	p, err := strconv.Atoi(port)
-	if err != nil {
-		return 0, errors.New("invalid port expected integer")
-	}
-
-	if p < 0 || p > 65535 {
-		fmt.Println("Port provided is an invalid postgres port.... falling back to default postgres port")
-		p = 5432
-	}
-
-	return p, nil
 }

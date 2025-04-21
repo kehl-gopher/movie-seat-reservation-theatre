@@ -1,6 +1,9 @@
 package repository
 
-import "gorm.io/gorm"
+import (
+	"github.com/redis/go-redis/v9"
+	"gorm.io/gorm"
+)
 
 type Postgres struct {
 	DB *gorm.DB
@@ -12,8 +15,19 @@ func NewPostgres(db *gorm.DB) *Postgres {
 	}
 }
 
+type Rediss struct {
+	Rdb *redis.Client
+}
+
+func NewRedis(db *redis.Client) *Rediss {
+	return &Rediss{
+		Rdb: db,
+	}
+}
+
 type Database struct {
 	Pdb *Postgres
+	Red *Rediss
 }
 
 var DB = &Database{}

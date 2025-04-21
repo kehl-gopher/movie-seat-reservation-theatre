@@ -12,8 +12,12 @@ type AppEnv struct {
 }
 
 type Redis struct {
-	RED_CONNSTR string `mapstructure:"red_connstr"`
-	RED_SSLMODE string `mapstructure:"ssl_mode"`
+	RED_HOST     string `mapstructure:"red_host"`
+	RED_PORT     string `mapstructure:"red_port"`
+	RED_PASSWORD string `mapstructure:"red_password"`
+	RED_DB       string `mapstructure:"red_db"`
+	RED_URL      string `mapstructure:"red_url"`
+	RED_SSLMODE  string `mapstructure:"red_sslmode"`
 }
 type Database struct {
 	DBNAME      string `mapstructure:"db_name"`

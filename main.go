@@ -6,6 +6,7 @@ import (
 	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/models/seeding"
 	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/repository"
 	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/repository/postgres"
+	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/repository/redis"
 	"github.com/kehl-gopher/movie-seat-reservation-theatre/pkg/router"
 )
 
@@ -19,6 +20,10 @@ func main() {
 		panic(err)
 	}
 
+	_, err = redis.ConnectRedis(config)
+	if err != nil {
+		panic(err)
+	}
 	db := repository.ConnectDB()
 
 	// run migration for models
