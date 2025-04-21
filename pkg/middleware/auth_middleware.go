@@ -15,13 +15,13 @@ func AuthMiddleWare(secret_key string, db *repository.Database) gin.HandlerFunc 
 		authorisation := ctx.Request.Header.Get("Authorization")
 		auths := strings.Split(authorisation, " ")
 		if len(auths) != 2 {
-			resp := utility.UnAuthorizedResponse(http.StatusBadRequest, "invalid token", http.StatusText(http.StatusBadRequest))
+			resp := utility.BuildErrorResponse(http.StatusBadRequest, nil, "invalid token", http.StatusText(http.StatusBadRequest))
 			ctx.JSON(http.StatusBadRequest, resp)
 			ctx.Abort()
 			return
 		}
 		if auths[0] != "Bearer" {
-			resp := utility.UnAuthorizedResponse(http.StatusBadRequest, "invalid token", http.StatusText(http.StatusBadRequest))
+			resp := utility.BuildErrorResponse(http.StatusBadRequest, nil, "invalid token", http.StatusText(http.StatusBadRequest))
 			ctx.JSON(http.StatusBadRequest, resp)
 			ctx.Abort()
 			return
@@ -30,7 +30,7 @@ func AuthMiddleWare(secret_key string, db *repository.Database) gin.HandlerFunc 
 		userClaim := utility.AccessTokenClaim{SecretKey: []byte(secret_key)}
 		userId, roleID, err := userClaim.ExtractClaims(auths[1])
 		if err != nil {
-			resp := utility.UnAuthorizedResponse(http.StatusBadRequest, err.Error(), http.StatusText(http.StatusBadRequest))
+			resp := utility.BuildErrorResponse(http.StatusBadRequest, nil, err.Error(), http.StatusText(http.StatusBadRequest))
 			ctx.JSON(http.StatusBadRequest, resp)
 			ctx.Abort()
 			return
@@ -42,11 +42,12 @@ func AuthMiddleWare(secret_key string, db *repository.Database) gin.HandlerFunc 
 		u, err := user.PreloadUserRole(db, models.RoleIDs(roleID))
 
 		if err != nil {
-			resp := utility.UnAuthorizedResponse(http.StatusBadRequest, err.Error(), http.StatusText(http.StatusBadRequest))
+			resp := utility.BuildErrorResponse(http.StatusBadRequest, nil, err.Error(), http.StatusText(http.StatusBadRequest))
 			ctx.JSON(http.StatusBadRequest, resp)
 			ctx.Abort()
 			return
 		}
 		ctx.Set("user", *u)
+		ctx.Next()
 	}
 }

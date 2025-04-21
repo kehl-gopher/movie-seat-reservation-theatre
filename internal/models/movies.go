@@ -17,10 +17,11 @@ type Date time.Time // define custom date for release date
 type Movie struct {
 	ID           string         `json:"id" gorm:"primaryKey"`
 	Title        string         `json:"title" gorm:"type:text;not null;index"`
-	Synopsis     string         `json:"synopsis" gorm:"type:text;not;index"`
+	Synopsis     string         `json:"synopsis" gorm:"type:text;index"`
 	BackDropPath string         `json:"backdrop_path" gorm:"type:text"`
 	PosterPath   string         `json:"poster_path" gorm:"type:text"`
 	ReleaseDate  Date           `json:"release_date" gorm:"not null"`
+	Duration     uint8          `json:"duration" gorm:"not null"`
 	CreatedAt    time.Time      `json:"created_at" gorm:"autoCreateTime"`
 	UpdatedAt    time.Time      `json:"updated_at" gorm:"autoUpdateTime"`
 	DeletedAt    gorm.DeletedAt `json:"-" gorm:"index"`

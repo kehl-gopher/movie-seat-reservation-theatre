@@ -56,6 +56,6 @@ func ValidationErrorResponse(errors map[string]string, v *ValidationError) *Vali
 	return v
 }
 
-func UnAuthorizedResponse(statusCode int, message string, status string) Response {
-	return buildResponse(statusCode, status, message, nil, nil, nil)
+func UnAuthorizedResponse(message string, status string) Response {
+	return buildResponse(http.StatusUnauthorized, status, message, nil, nil, nil)
 }

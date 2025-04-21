@@ -10,4 +10,8 @@ func StartSeeding(db *repository.Database) {
 	if !s.CheckRoleExists() {
 		s.SeedRole()
 	}
+
+	if !s.CheckGenreExists() {
+		s.SeedGenre()
+	}
 }
