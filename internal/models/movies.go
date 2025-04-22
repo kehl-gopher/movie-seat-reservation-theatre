@@ -62,11 +62,11 @@ func (d Date) MarshalJSON() ([]byte, error) {
 }
 
 func (d *Date) UnmarshalJSON(b []byte) error {
-	var t time.Time
+	var t string
 	if err := json.Unmarshal(b, &t); err != nil {
 		return err
 	}
-	dt, err := time.Parse("2006-01-02", t.Format("2006-01-02"))
+	dt, err := time.Parse("2006-01-02", t)
 	if err != nil {
 		return err
 	}
@@ -112,15 +112,15 @@ func (m *Movie) CreateMovie(db *repository.Database, filePath string, bucketName
 
 func GetGenresByID(db *gorm.DB, genreIDs ...string) ([]Genre, error) {
 	var genre = []Genre{}
-	query := `id IN (?)`
-	err := postgres.SelectMultipleRecord(db, query, &Genre{}, genre, genreIDs)
+	query := `id IN ?`
+	err := postgres.SelectMultipleRecord(db, query, &Genre{}, &genre, genreIDs)
 
 	return genre, err
 }
 
 func (m *Genre) GetAllGenres(db *repository.Database) ([]Genre, error) {
 	var genres []Genre
-	err := postgres.SelectAllRecords(db.Pdb.DB, "", "name", Genre{}, &genres)
+	err := postgres.SelectAllRecords(db.Pdb.DB, "", "name", &Genre{}, &genres)
 	if err != nil {
 		if errors.Is(gorm.ErrRecordNotFound, err) {
 			return nil, errors.New("no genres found")

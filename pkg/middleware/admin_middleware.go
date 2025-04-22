@@ -12,9 +12,10 @@ func AuthAdmin() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// Check if the user is an admin
 		roleID, exists := c.Get("roleID")
-		id := models.RoleIDs(roleID.(int))
+
+		id := roleID.(models.RoleIDs)
 		if !exists || id.String() != models.Admin {
-			resp := utility.UnAuthorizedResponse("invalid user not an admin", http.StatusText(http.StatusUnauthorized))
+			resp := utility.UnAuthorizedResponse("user not an admin", http.StatusText(http.StatusUnauthorized))
 			c.JSON(http.StatusUnauthorized, resp)
 			c.Abort()
 			return

@@ -132,21 +132,17 @@ func (v *ValidationError) ValidateMovieDuration(duration uint8) uint8 {
 func (v *ValidationError) ValidateImage(base64Image string, tag string) ([]byte, string) {
 	const maxImageSize = 5 * 1024 * 1024 // 5MB
 	var ext string
-	hasUrlFormat := []string{"data:image/jpeg;base64", "data:image/png;base64", "data:image/jpg;base64"}
 
 	if base64Image == "" {
 		return nil, ""
 	}
 
-	for _, imagePrefix := range hasUrlFormat {
-		if strings.HasPrefix(base64Image, imagePrefix) {
-			v.AddValidationError(tag, "expected base64 image string, got URL instead")
-			return nil, ""
-		}
+	if !ChecksupportedImageFormat(base64Image) {
+		v.AddValidationError(tag, "expected base64 image string, got URL instead")
+		return nil, ""
 	}
-	splitBaseImage := strings.Split(base64Image, ",")[0]
-
-	switch splitBaseImage {
+	splitBaseImage := strings.Split(base64Image, ",")
+	switch splitBaseImage[0] {
 	case "data:image/jpeg;base64":
 		ext = "jpeg"
 	case "data:image/png;base64":
@@ -157,9 +153,10 @@ func (v *ValidationError) ValidateImage(base64Image string, tag string) ([]byte,
 		v.AddValidationError(tag, "invalid content type: only PNG, JPG, JPEG are supported")
 	}
 
-	byt, err := base64.StdEncoding.DecodeString(base64Image)
+	byt, err := base64.StdEncoding.DecodeString(splitBaseImage[1])
 
 	if err != nil {
+		fmt.Println(err, byt)
 		v.AddValidationError("image", "Invalid image format")
 		return nil, ""
 	}
@@ -171,4 +168,15 @@ func (v *ValidationError) ValidateImage(base64Image string, tag string) ([]byte,
 	}
 
 	return byt, ext
+}
+
+func ChecksupportedImageFormat(base64Image string) bool {
+	imagePrefixes := []string{"data:image/jpeg;base64", "data:image/png;base64", "data:image/jpg;base64"}
+	for _, imagePrefix := range imagePrefixes {
+		if strings.HasPrefix(base64Image, imagePrefix) {
+			return true
+		}
+		continue
+	}
+	return false
 }

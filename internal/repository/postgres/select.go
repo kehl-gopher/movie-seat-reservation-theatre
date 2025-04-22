@@ -26,7 +26,7 @@ func SelectAllRecords(db *gorm.DB, orderBy, value string, models interface{}, re
 }
 
 func SelectMultipleRecord(db *gorm.DB, query string, model interface{}, receiver interface{}, args ...interface{}) error {
-	res := db.Model(model).Where(query, args).Scan(receiver)
+	res := db.Model(model).Where(query, args...).Scan(receiver)
 	if res.Error != nil {
 		return res.Error
 	}

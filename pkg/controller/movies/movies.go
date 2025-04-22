@@ -10,6 +10,7 @@ import (
 	"github.com/kehl-gopher/movie-seat-reservation-theatre/pkg/service/movies"
 )
 
+
 type MovieBase struct {
 	DB     *repository.Database
 	Config *env.Config
@@ -22,6 +23,7 @@ func (m *MovieBase) CreateMovie(c *gin.Context) {
 	if err := c.ShouldBindJSON(mov); err != nil {
 		resp := utility.BuildErrorResponse(http.StatusBadRequest, err, "bad request sent", http.StatusText(http.StatusBadRequest))
 		c.AbortWithStatusJSON(http.StatusBadRequest, resp)
+		return
 	}
 
 	statusCode, err := movies.CreateMovies(m.DB, mov, m.Config)

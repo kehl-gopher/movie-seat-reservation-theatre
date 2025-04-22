@@ -25,7 +25,7 @@ func UploadToMinio(min *minio.Client, filePath string, bucketName, contentType, 
 
 	fmt.Println(info.Bucket)
 
-	minioUrl := min.EndpointURL().Host + "/" + info.Bucket + "/" + objectName
+	minioUrl := "http://" + min.EndpointURL().Host + "/" + info.Bucket + "/" + objectName
 	fmt.Println(minioUrl)
 	return minioUrl, nil
 }

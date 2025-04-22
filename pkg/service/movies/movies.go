@@ -70,8 +70,8 @@ func CreateMovies(db *repository.Database, movie *MovieReq, config *env.Config) 
 		Genres:      genres,
 	}
 
-	pObjName := movie.Title + "_poster" + "." + extPoster
-	bObjName := movie.Title + "_backdrop" + "." + extBackdrop
+	pObjName := movie.Title + "_poster" + utility.GenerateUUID() + "." + extPoster
+	bObjName := movie.Title + "_backdrop" + utility.GenerateUUID() + "." + extBackdrop
 	err = m.CreateMovie(db, FilePath, config.MINIO_BUCKET, pObjName, bObjName, extPoster, extBackdrop, posterImage, backdropImage)
 
 	if err != nil {
