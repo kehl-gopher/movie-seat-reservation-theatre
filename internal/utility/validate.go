@@ -1,9 +1,12 @@
 package utility
 
 import (
+	"encoding/base64"
 	"fmt"
 	"net/mail"
 	"regexp"
+	"strings"
+	"unicode/utf8"
 )
 
 var NameRegexPattern = `^[A-Za-z]+$`
@@ -70,4 +73,102 @@ func (v *ValidationError) ValidateName(name string, tag string) string {
 	}
 
 	return name
+}
+
+// movie validation
+
+func (v *ValidationError) ValidateMovieName(name string, tag string) string {
+	if name == "" {
+		v.AddValidationError(tag, fmt.Sprintf("%s is required", tag))
+		return ""
+	} else if len(name) < 3 {
+		v.AddValidationError(tag, fmt.Sprintf("%s length is short", tag))
+		return ""
+	} else if len(name) > 50 {
+		v.AddValidationError(tag, fmt.Sprintf("%s length is long", tag))
+		return ""
+	}
+	return name
+}
+
+func (v *ValidationError) ValidateMovieSynopsis(synopsis string) string {
+	if synopsis == "" {
+		v.AddValidationError("synopsis", "synopsis is required")
+		return ""
+	} else if utf8.RuneCountInString(synopsis) < 3 {
+		v.AddValidationError("synopsis", "synopsis length is short")
+		return ""
+	} else if utf8.RuneCountInString(synopsis) > 500 {
+		v.AddValidationError("synopsis", "synopsis length is long")
+		return ""
+	}
+	return synopsis
+}
+
+func (v *ValidationError) ValidateMovieGenreID(genreID []string) []string {
+	if len(genreID) == 0 {
+		v.AddValidationError("genre_ids", "genre_ids is required")
+		return nil
+	}
+	return genreID
+}
+
+// func (v *ValidationError) ValidateMovieReleaseDate(releaseDate string) time.Time {
+// 	if releaseDate == "" {
+// 		v.AddValidationError("release_date", "release_date is required")
+// 		return ""
+// 	}
+// 	return releaseDate
+// }
+
+func (v *ValidationError) ValidateMovieDuration(duration uint8) uint8 {
+	if duration == 0 {
+		v.AddValidationError("duration", "duration is required")
+		return 0
+	}
+	return duration
+}
+
+func (v *ValidationError) ValidateImage(base64Image string, tag string) ([]byte, string) {
+	const maxImageSize = 5 * 1024 * 1024 // 5MB
+	var ext string
+	hasUrlFormat := []string{"data:image/jpeg;base64", "data:image/png;base64", "data:image/jpg;base64"}
+
+	if base64Image == "" {
+		return nil, ""
+	}
+
+	for _, imagePrefix := range hasUrlFormat {
+		if strings.HasPrefix(base64Image, imagePrefix) {
+			v.AddValidationError(tag, "expected base64 image string, got URL instead")
+			return nil, ""
+		}
+	}
+	splitBaseImage := strings.Split(base64Image, ",")[0]
+
+	switch splitBaseImage {
+	case "data:image/jpeg;base64":
+		ext = "jpeg"
+	case "data:image/png;base64":
+		ext = "png"
+	case "data:image/jpg;base64":
+		ext = "jpg"
+	default:
+		v.AddValidationError(tag, "invalid content type: only PNG, JPG, JPEG are supported")
+	}
+
+	byt, err := base64.StdEncoding.DecodeString(base64Image)
+
+	if err != nil {
+		v.AddValidationError("image", "Invalid image format")
+		return nil, ""
+	}
+
+	// if ValidateMimeType(string(byt))
+	if len(byt) > maxImageSize {
+		v.AddValidationError("image", "Image size is too large")
+		return nil, ""
+	}
+
+	return byt, ext
 }

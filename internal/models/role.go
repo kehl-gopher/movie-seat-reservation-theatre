@@ -71,7 +71,7 @@ func GetRoleID(db *gorm.DB, rID RoleIDs) (*UserRoleID, error) {
 
 func GetAllRoleIDs(db *gorm.DB) ([]UserRoleResponse, error) {
 	roles := []UserRoleResponse{}
-	err := postgres.SelectAllRecords(db, "", UserRoleID{}, &roles)
+	err := postgres.SelectAllRecords(db, "", "", UserRoleID{}, &roles)
 	if err != nil {
 		if errors.Is(gorm.ErrRecordNotFound, err) {
 			return nil, errors.New("no roles found")
@@ -83,7 +83,7 @@ func GetAllRoleIDs(db *gorm.DB) ([]UserRoleResponse, error) {
 
 func GetAllRoles(db *gorm.DB) ([]Role, error) {
 	roles := []Role{}
-	err := postgres.SelectAllRecords(db, "", Role{}, &roles)
+	err := postgres.SelectAllRecords(db, "", "", Role{}, &roles)
 	if err != nil {
 		if errors.Is(gorm.ErrRecordNotFound, err) {
 			return nil, errors.New("no roles found")

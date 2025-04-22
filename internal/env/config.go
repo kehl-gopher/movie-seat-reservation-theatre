@@ -19,6 +19,15 @@ type Redis struct {
 	RED_URL      string `mapstructure:"red_url"`
 	RED_SSLMODE  string `mapstructure:"red_sslmode"`
 }
+
+type Minio struct {
+	MINIO_ENDPOINT  string `mapstructure:"minio_endpoint"`
+	MINIO_ACCESSKEY string `mapstructure:"minio_access_key"`
+	MINIO_BUCKET    string `mapstructure:"minio_bucket"`
+	MINIO_SECRETKEY string `mapstructure:"minio_secret_key"`
+	MINIO_USESSL    string `mapstructure:"minio_usessl"`
+	MINIO_REGION    string `mapstructure:"minio_region"`
+}
 type Database struct {
 	DBNAME      string `mapstructure:"db_name"`
 	DBPASSWORD  string `mapstructure:"db_password"`
@@ -33,4 +42,5 @@ type Config struct {
 	Database `mapstructure:"database,squash"`
 	Redis    `mapstructure:"redis,squash"`
 	AppEnv   `mapstructure:"app_env,squash"`
+	Minio    `mapstructure:"minio,squash"`
 }

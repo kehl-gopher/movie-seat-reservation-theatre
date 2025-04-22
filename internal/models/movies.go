@@ -3,12 +3,15 @@ package models
 import (
 	"database/sql/driver"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"time"
 
 	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/repository"
+	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/repository/minio"
 	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/repository/postgres"
 	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/utility"
+	mini "github.com/minio/minio-go/v7"
 	"gorm.io/gorm"
 )
 
@@ -76,11 +79,55 @@ func (m *Movie) BeforeCreate(tx *gorm.DB) error {
 	return nil
 }
 
-func (m *Movie) CreateMovie(db *repository.Database) error {
+func UploadImageToMinio(min *mini.Client, imageByte []byte, filePath string, ext string, bucketName, objName string) (string, error) {
+
+	contentType := "image/" + ext
+	url, err := minio.UploadToMinio(min, filePath, bucketName, contentType, objName, imageByte)
+
+	if err != nil {
+		return "", err
+	}
+	return url, nil
+}
+
+func (m *Movie) CreateMovie(db *repository.Database, filePath string, bucketName string, obj1 string, obj2 string, ext1 string, ext2 string, imageBytes ...[]byte) error {
+	// generate minio object url
+	profilePath, err := UploadImageToMinio(db.Min, imageBytes[0], filePath, ext1, bucketName, obj1)
+	if err != nil {
+		return nil
+	}
+	backdropPath, err := UploadImageToMinio(db.Min, imageBytes[1], filePath, ext2, bucketName, obj2)
+	if err != nil {
+		return err
+	}
+
+	m.PosterPath = profilePath
+	m.BackDropPath = backdropPath
+
 	if err := postgres.Create(db.Pdb.DB, m); err != nil {
 		return err
 	}
 	return nil
+}
+
+func GetGenresByID(db *gorm.DB, genreIDs ...string) ([]Genre, error) {
+	var genre = []Genre{}
+	query := `id IN (?)`
+	err := postgres.SelectMultipleRecord(db, query, &Genre{}, genre, genreIDs)
+
+	return genre, err
+}
+
+func (m *Genre) GetAllGenres(db *repository.Database) ([]Genre, error) {
+	var genres []Genre
+	err := postgres.SelectAllRecords(db.Pdb.DB, "", "name", Genre{}, &genres)
+	if err != nil {
+		if errors.Is(gorm.ErrRecordNotFound, err) {
+			return nil, errors.New("no genres found")
+		}
+		return nil, err
+	}
+	return genres, nil
 }
 
 // TODO: get all movie relations

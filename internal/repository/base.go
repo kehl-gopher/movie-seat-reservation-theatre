@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"github.com/minio/minio-go/v7"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )
@@ -28,6 +29,7 @@ func NewRedis(db *redis.Client) *Rediss {
 type Database struct {
 	Pdb *Postgres
 	Red *Rediss
+	Min *minio.Client
 }
 
 var DB = &Database{}

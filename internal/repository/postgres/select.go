@@ -9,10 +9,12 @@ import (
 
 var ErrNoRecordFound = errors.New("No record found")
 
-func SelectAllRecords(db *gorm.DB, orderBy string, models interface{}, receiver interface{}) error {
+func SelectAllRecords(db *gorm.DB, orderBy, value string, models interface{}, receiver interface{}) error {
 
-	if orderBy == "" {
-		orderBy = "asc"
+	if orderBy == "" && value == "" {
+		orderBy = fmt.Sprintf("%s %s", "id", "asc")
+	} else {
+		orderBy = fmt.Sprintf("%s %s", value, orderBy)
 	}
 	res := db.Model(models).Order(orderBy).Find(receiver)
 	if res.Error != nil {
@@ -23,6 +25,16 @@ func SelectAllRecords(db *gorm.DB, orderBy string, models interface{}, receiver 
 	return nil
 }
 
+func SelectMultipleRecord(db *gorm.DB, query string, model interface{}, receiver interface{}, args ...interface{}) error {
+	res := db.Model(model).Where(query, args).Scan(receiver)
+	if res.Error != nil {
+		return res.Error
+	}
+	if res.RowsAffected == 0 {
+		return ErrNoRecordFound
+	}
+	return nil
+}
 func SelectSingleRecord(db *gorm.DB, query string, model interface{}, receiver interface{}, args ...interface{}) error {
 	err := db.Model(model).Where(query, args).First(receiver).Error
 	if err != nil {
