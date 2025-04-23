@@ -15,7 +15,8 @@ func MovieRoutes(router *gin.Engine, config *env.Config, DB *repository.Database
 	secret_key := []byte(config.SECRET_KEY)
 	movieUrl := router.Group(fmt.Sprintf("%s", config.BASEURL))
 	{
-		movieUrl.POST("/movies", middleware.AuthMiddleWare(string(secret_key), DB), middleware.AuthAdmin(), movieBase.CreateMovie)
+		movieUrl.POST("/movie", middleware.AuthMiddleWare(string(secret_key), DB), middleware.AuthAdmin(), movieBase.CreateMovie)
+		movieUrl.GET("/movies", movieBase.GetMovies)
 		movieUrl.GET("/movie/:movieId", movieBase.GetMovie)
 	}
 	// get movie genres

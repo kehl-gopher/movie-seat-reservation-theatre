@@ -57,8 +57,30 @@ func SelectAllRecords(db *gorm.DB, orderBy, value string, models interface{}, re
 }
 
 func buildPrevNextPage(pagination Pagination, totalPage uint) (string, string) {
-	nextPage := fmt.Sprintf("/?page=%d&limit=%d", pagination.Offset+1, pagination.Limit)
-	prevPage := fmt.Sprintf("/?page=%d&limit=%d", pagination.Offset-1, pagination.Limit)
+	if pagination.Offset > totalPage {
+		return "", ""
+	}
+	if pagination.Offset == 1 {
+		if totalPage == 1 {
+			return "", ""
+		}
+		nextPage := fmt.Sprintf("movies?page=%d&limit=%d", pagination.Offset+1, pagination.Limit)
+		prevPage := ""
+		return nextPage, prevPage
+	} else if pagination.Offset == totalPage {
+		if totalPage == 1 {
+			return "", ""
+		}
+		nextPage := ""
+		prevPage := fmt.Sprintf("movies?page=%d&limit=%d", pagination.Offset-1, pagination.Limit)
+		return nextPage, prevPage
+	} else if pagination.Offset < totalPage {
+		nextPage := fmt.Sprintf("movies?page=%d&limit=%d", pagination.Offset+1, pagination.Limit)
+		prevPage := fmt.Sprintf("movies?page=%d&limit=%d", pagination.Offset-1, pagination.Limit)
+		return nextPage, prevPage
+	}
+	nextPage := fmt.Sprintf("movies?page=%d&limit=%d", pagination.Offset+1, pagination.Limit)
+	prevPage := fmt.Sprintf("movies?page=%d&limit=%d", pagination.Offset-1, pagination.Limit)
 	return nextPage, prevPage
 }
 func SelectAllRecordWithPagination(db *gorm.DB, query string, orderBy, order string, model interface{}, receiver interface{}, limit, offset uint, args ...interface{}) (PaginationResponse, error) {
@@ -81,7 +103,7 @@ func SelectAllRecordWithPagination(db *gorm.DB, query string, orderBy, order str
 		}, err
 	}
 	off := int(pagination.Limit) * (int(pagination.Offset) - 1)
-	tx := db.Limit(int(pagination.Limit)).Offset((off)).Order(fmt.Sprintf("%s %s", order, orderBy)).Find(&receiver)
+	tx := db.Model(model).Limit(int(pagination.Limit)).Offset((off)).Order(fmt.Sprintf("%s %s", order, orderBy)).Find(receiver)
 	if tx.Error != nil {
 		return PaginationResponse{
 			Page:  pagination.Offset,

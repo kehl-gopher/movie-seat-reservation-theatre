@@ -63,3 +63,21 @@ func (m *MovieBase) GetMovie(c *gin.Context) {
 	c.JSON(statusCode, resp)
 
 }
+
+func (m *MovieBase) GetMovies(c *gin.Context) {
+
+	limit, offset := utility.GetPaginationParams(c)
+
+	movies, statusCode, pag, err := movies.GetAllMovies(m.DB, limit, offset, m.Config)
+
+	if err != nil {
+		resp := utility.BuildErrorResponse(statusCode, err, "error getting movies", http.StatusText(statusCode))
+		c.AbortWithStatusJSON(statusCode, resp)
+		return
+	}
+
+	resp := utility.BuildSuccessResponse(statusCode, "movies found", movies, pag)
+
+	c.JSON(statusCode, resp)
+
+}

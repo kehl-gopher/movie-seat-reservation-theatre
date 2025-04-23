@@ -7,7 +7,7 @@ import (
 	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/repository"
 )
 
-func GetAllMovies(db *repository.Database) ([]models.Genre, int, error) {
+func GetAllGenres(db *repository.Database) ([]models.Genre, int, error) {
 
 	genre := &models.Genre{}
 	genres, err := genre.GetAllGenres(db)

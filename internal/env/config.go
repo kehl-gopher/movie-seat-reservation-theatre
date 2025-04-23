@@ -7,6 +7,7 @@ type AppEnv struct {
 	APP_PORT   string `mapstructure:"app_port"`
 	APP_HOST   string `mapstructure:"app_host"`
 	APP_NAME   string `mapstructure:"app_name"`
+	APP_URL    string `mapstructure:"app_url"`
 	SECRET_KEY string `mapstructure:"jwt_secret_key"`
 	EXPIRES_IN string `mapstructure:"expiration_time_min"`
 }

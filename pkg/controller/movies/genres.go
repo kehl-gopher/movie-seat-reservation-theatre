@@ -11,7 +11,7 @@ import (
 
 func (m *MovieBase) GetGenres(c *gin.Context) {
 
-	genres, statusCode, err := movies.GetAllMovies(m.DB)
+	genres, statusCode, err := movies.GetAllGenres(m.DB)
 
 	if err != nil {
 		fmt.Println(err)

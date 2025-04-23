@@ -66,7 +66,7 @@ func CreateMovies(db *repository.Database, movie *MovieReq, config *env.Config) 
 		Title:       movie.Title,
 		Synopsis:    *movie.Synopsis,
 		ReleaseDate: movie.ReleasDate,
-		Duration:    movie.DurationInMin,
+		Duration:    models.Duration(movie.DurationInMin),
 		Genres:      genres,
 	}
 
@@ -93,4 +93,19 @@ func GetMovieByID(db *repository.Database, id string) (*models.Movie, int, error
 		return nil, http.StatusInternalServerError, err
 	}
 	return mov, http.StatusOK, nil
+}
+
+func GetAllMovies(db *repository.Database, offset, limit uint, config *env.Config) ([]models.MovieResponse, int, postgres.PaginationResponse, error) {
+
+	movie := models.Movie{}
+
+	mov, pag, err := movie.GetAllMoviesWithPagination(db, offset, limit, config)
+
+	if err != nil {
+		if err.Error() == "no movies found" {
+			return nil, http.StatusNotFound, pag, err
+		}
+		return nil, http.StatusInternalServerError, pag, err
+	}
+	return mov, http.StatusOK, pag,nil
 }

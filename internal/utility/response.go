@@ -3,12 +3,12 @@ package utility
 import "net/http"
 
 type Response struct {
-	StatusCode int         `json:"status_code"`
-	Status     string      `json:"status"`
+	StatusCode int         `json:"status_code,omitempty"`
+	Status     string      `json:"status,omitempty"`
 	Message    string      `json:"message,omitempty"`
 	Error      string      `json:"error,omitempty"`
-	Data       interface{} `json:"data,omitempty"`
 	Pagination interface{} `json:"pagination,omitempty"`
+	Data       interface{} `json:"data,omitempty"`
 }
 
 func BuildErrorResponse(statusCode int, error error, message, status string) Response {

@@ -4,8 +4,11 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"strconv"
 	"time"
 
+	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/env"
 	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/repository"
 	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/repository/minio"
 	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/repository/postgres"
@@ -15,6 +18,7 @@ import (
 )
 
 type Date time.Time // define custom date for release date
+type Duration uint8
 
 type Movie struct {
 	ID           string         `json:"id" gorm:"primaryKey"`
@@ -23,7 +27,7 @@ type Movie struct {
 	BackDropPath string         `json:"backdrop_path" gorm:"type:text"`
 	PosterPath   string         `json:"poster_path" gorm:"type:text"`
 	ReleaseDate  Date           `json:"release_date" gorm:"type:date;not null"`
-	Duration     uint8          `json:"duration" gorm:"not null"`
+	Duration     Duration       `json:"duration" gorm:"type:smallint;not null"`
 	CreatedAt    time.Time      `json:"-" gorm:"autoCreateTime"`
 	UpdatedAt    time.Time      `json:"-" gorm:"autoUpdateTime"`
 	DeletedAt    gorm.DeletedAt `json:"-" gorm:"index"`
@@ -35,41 +39,13 @@ type Genre struct {
 	Name string `json:"name" gorm:"type:text;not null;unique;index"`
 }
 
-func (d *Date) Scan(value interface{}) error {
-	var t time.Time
-	switch value.(type) {
-	case time.Time:
-		t = value.(time.Time)
-	case []byte:
-		t, _ = time.Parse("2006-01-02", string(value.([]byte)))
-	default:
-		return errors.New("failed to scan date")
-	}
-	*d = Date(t)
-	return nil
-}
-
-func (d Date) Value() (driver.Value, error) {
-	valueString, err := json.Marshal(d)
-	return valueString, err
-}
-
-func (d Date) MarshalJSON() ([]byte, error) {
-	t := time.Time(d)
-	return json.Marshal(t.Format("2006-01-02"))
-}
-
-func (d *Date) UnmarshalJSON(b []byte) error {
-	var t string
-	if err := json.Unmarshal(b, &t); err != nil {
-		return err
-	}
-	dt, err := time.Parse("2006-01-02", t)
-	if err != nil {
-		return err
-	}
-	*d = Date(dt)
-	return nil
+type MovieResponse struct {
+	ID          string   `json:"id"`
+	Title       string   `json:"title"`
+	PosterPath  string   `json:"poster_path"`
+	ReleaseDate Date     `json:"release_date"`
+	Duration    Duration `json:"duration"`
+	Url         string   `json:"url,omitempty" gorm:"-"`
 }
 
 func (m *Movie) BeforeCreate(tx *gorm.DB) error {
@@ -141,9 +117,31 @@ func (m *Movie) GetMovieByID(db *repository.Database, id string) (*Movie, error)
 }
 
 // TODO: get all movies with paginations paginations
-func (m *Movie) GetAllMovies(db *repository.Database, page, limit int) ([]Movie, error) {
-	var movies []Movie
-	return movies, nil
+func (m *Movie) GetAllMoviesWithPagination(db *repository.Database, page, limit uint, config *env.Config) ([]MovieResponse, postgres.PaginationResponse, error) {
+	var movies []MovieResponse
+
+	pag, err := postgres.SelectAllRecordWithPagination(db.Pdb.DB, "", "desc", "created_at", &Movie{}, &movies, limit, page)
+
+	if err != nil {
+		return nil, pag, err
+	}
+	if len(movies) == 0 {
+		return nil, pag, errors.New("no movies found")
+	}
+
+	for ind, movie := range movies {
+		movies[ind] =
+			MovieResponse{
+				ID:          movie.ID,
+				Title:       movie.Title,
+				PosterPath:  movie.PosterPath,
+				ReleaseDate: movie.ReleaseDate,
+				Duration:    movie.Duration,
+				Url:         fmt.Sprintf("%s%s/movie/%s", config.APP_URL, config.BASEURL, movie.ID),
+			}
+	}
+
+	return movies, pag, nil
 }
 
 // TODO: update movies
@@ -154,5 +152,89 @@ func (m *Movie) UpdateMovie(db *repository.Database, id string) (*Movie, error) 
 
 // TODO: delete movie
 func (m *Movie) DeleteMovie(db *repository.Database, id string) error {
+	return nil
+}
+
+// custom type for date
+func (d *Date) Scan(value interface{}) error {
+	var t time.Time
+	switch value.(type) {
+	case time.Time:
+		t = value.(time.Time)
+	case []byte:
+		t, _ = time.Parse("2006-01-02", string(value.([]byte)))
+	default:
+		return errors.New("failed to scan date")
+	}
+	*d = Date(t)
+	return nil
+}
+
+func (d Date) Value() (driver.Value, error) {
+	valueString, err := json.Marshal(d)
+	return valueString, err
+}
+
+func (d Date) MarshalJSON() ([]byte, error) {
+	t := time.Time(d)
+	return json.Marshal(t.Format("2006-01-02"))
+}
+
+func (d *Date) UnmarshalJSON(b []byte) error {
+	var t string
+	if err := json.Unmarshal(b, &t); err != nil {
+		return err
+	}
+	dt, err := time.Parse("2006-01-02", t)
+	if err != nil {
+		return err
+	}
+	*d = Date(dt)
+	return nil
+}
+
+// Custom type For Duration
+func (d *Duration) Scan(value interface{}) error {
+	switch value.(type) {
+	case int64:
+		*d = Duration(value.(int64))
+	case []byte:
+		intD, err := strconv.Atoi(string(value.([]byte)))
+		if err != nil {
+			return err
+		}
+		*d = Duration(uint8(intD))
+	default:
+		return errors.New("failed to scan duration")
+	}
+	return nil
+}
+
+func (d Duration) Value() (driver.Value, error) {
+	valueString := uint8(d)
+	return valueString, nil
+}
+
+// marshal json
+func (d Duration) MarshalJSON() ([]byte, error) {
+	fmt.Println("Marshal json")
+	hour := d / 60
+	min := d % 60
+	timeDuration := fmt.Sprintf("%dhr %dmin", hour, min)
+	return json.Marshal(timeDuration)
+}
+
+func (d *Duration) UnmarshalJSON(b []byte) error {
+	fmt.Println("unmarshal json..........>")
+	var t string
+	if err := json.Unmarshal(b, &t); err != nil {
+		return err
+	}
+	dt, err := strconv.Atoi(t)
+	if err != nil {
+		return err
+	}
+	*d = Duration(dt)
+	fmt.Println(*d, "--------------------->")
 	return nil
 }
