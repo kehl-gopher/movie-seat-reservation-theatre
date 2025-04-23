@@ -20,9 +20,11 @@ type Pagination struct {
 }
 
 type PaginationResponse struct {
-	Page      uint `json:"page"`
-	Limit     uint `json:"limit"`
-	TotalPage uint `json:"total_page"`
+	Page      uint   `json:"page"`
+	Limit     uint   `json:"limit"`
+	TotalPage uint   `json:"total_page"`
+	PrevPage  string `json:"prev_page,omitempty"`
+	NextPage  string `json:"next_page,omitempty"`
 }
 
 func GetPagination(offset, limit uint) Pagination {
@@ -54,9 +56,48 @@ func SelectAllRecords(db *gorm.DB, orderBy, value string, models interface{}, re
 	return nil
 }
 
-func SelectAllRecordWithPagination(db *gorm.DB, query string, models interface{}, receiver interface{}, limit, offset uint, args ...interface{}) {
-	
+func buildPrevNextPage(pagination Pagination, totalPage uint) (string, string) {
+	nextPage := fmt.Sprintf("/?page=%d&limit=%d", pagination.Offset+1, pagination.Limit)
+	prevPage := fmt.Sprintf("/?page=%d&limit=%d", pagination.Offset-1, pagination.Limit)
+	return nextPage, prevPage
 }
+func SelectAllRecordWithPagination(db *gorm.DB, query string, orderBy, order string, model interface{}, receiver interface{}, limit, offset uint, args ...interface{}) (PaginationResponse, error) {
+	var count int64
+
+	if orderBy == "" {
+		orderBy = "asc"
+	}
+	if order == "" {
+		order = "id"
+	}
+
+	pagination := GetPagination(offset, limit)
+
+	err := db.Model(model).Count(&count).Error
+	if err != nil {
+		return PaginationResponse{
+			Page:  pagination.Offset,
+			Limit: pagination.Limit,
+		}, err
+	}
+	off := int(pagination.Limit) * (int(pagination.Offset) - 1)
+	tx := db.Limit(int(pagination.Limit)).Offset((off)).Order(fmt.Sprintf("%s %s", order, orderBy)).Find(&receiver)
+	if tx.Error != nil {
+		return PaginationResponse{
+			Page:  pagination.Offset,
+			Limit: pagination.Limit,
+		}, tx.Error
+	}
+	nextPage, prevPage := buildPrevNextPage(pagination, uint(count)/pagination.Limit)
+	return PaginationResponse{
+		Page:      pagination.Offset,
+		Limit:     pagination.Limit,
+		TotalPage: uint(count) / pagination.Limit,
+		NextPage:  nextPage,
+		PrevPage:  prevPage,
+	}, nil
+}
+
 func SelectMultipleRecord(db *gorm.DB, query string, model interface{}, receiver interface{}, args ...interface{}) error {
 	res := db.Model(model).Where(query, args...).Scan(receiver)
 	if res.Error != nil {
