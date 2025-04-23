@@ -57,7 +57,6 @@ type UserRoleResponse struct {
 func GetRoleID(db *gorm.DB, rID RoleIDs) (*UserRoleID, error) {
 	var uRole = &UserRoleID{}
 	query := `id = ?`
-
 	r := strconv.Itoa(int(rID))
 	preload := postgres.Preload(db, &UserRoleID{}, `Role`)
 	err := postgres.SelectSingleRecord(preload, query, &UserRoleID{}, uRole, r)

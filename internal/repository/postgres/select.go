@@ -9,6 +9,35 @@ import (
 
 var ErrNoRecordFound = errors.New("No record found")
 
+var (
+	defaultPageNumaber uint = 1
+	defaultPageSize    uint = 10
+)
+
+type Pagination struct {
+	Offset uint
+	Limit  uint
+}
+
+type PaginationResponse struct {
+	Page      uint `json:"page"`
+	Limit     uint `json:"limit"`
+	TotalPage uint `json:"total_page"`
+}
+
+func GetPagination(offset, limit uint) Pagination {
+	if offset == 0 {
+		offset = defaultPageNumaber
+	}
+	if limit == 0 {
+		limit = defaultPageSize
+	}
+	return Pagination{
+		Offset: offset,
+		Limit:  limit,
+	}
+}
+
 func SelectAllRecords(db *gorm.DB, orderBy, value string, models interface{}, receiver interface{}) error {
 
 	if orderBy == "" && value == "" {
@@ -25,6 +54,9 @@ func SelectAllRecords(db *gorm.DB, orderBy, value string, models interface{}, re
 	return nil
 }
 
+func SelectAllRecordWithPagination(db *gorm.DB, query string, models interface{}, receiver interface{}, limit, offset uint, args ...interface{}) {
+	
+}
 func SelectMultipleRecord(db *gorm.DB, query string, model interface{}, receiver interface{}, args ...interface{}) error {
 	res := db.Model(model).Where(query, args...).Scan(receiver)
 	if res.Error != nil {
