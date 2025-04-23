@@ -3,16 +3,13 @@ package minio
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/minio/minio-go/v7"
 )
 
 func UploadToMinio(min *minio.Client, filePath string, bucketName, contentType, objectName string, byt []byte) (string, error) {
-
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-
 	reader := bytes.NewReader(byt)
 	defer cancel()
 	info, err := min.PutObject(ctx, bucketName, objectName, reader, int64(len(byt)), minio.PutObjectOptions{
@@ -23,10 +20,7 @@ func UploadToMinio(min *minio.Client, filePath string, bucketName, contentType, 
 		return "", err
 	}
 
-	fmt.Println(info.Bucket)
-
-	minioUrl := "http://" + min.EndpointURL().Host + "/" + info.Bucket + "/" + objectName
-	fmt.Println(minioUrl)
+	minioUrl := min.EndpointURL().Host + "/" + info.Bucket + "/" + objectName
 	return minioUrl, nil
 }
 

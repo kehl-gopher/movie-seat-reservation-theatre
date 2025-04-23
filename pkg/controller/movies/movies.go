@@ -4,12 +4,12 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/env"
 	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/repository"
 	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/utility"
 	"github.com/kehl-gopher/movie-seat-reservation-theatre/pkg/service/movies"
 )
-
 
 type MovieBase struct {
 	DB     *repository.Database
@@ -41,4 +41,25 @@ func (m *MovieBase) CreateMovie(c *gin.Context) {
 	}
 	resp := utility.BuildSuccessResponse(http.StatusCreated, "movie created successfully", nil, http.StatusText(http.StatusCreated))
 	c.JSON(http.StatusCreated, resp)
+}
+
+func (m *MovieBase) GetMovie(c *gin.Context) {
+	movie_id := utility.GetParams(c, "movieId")
+	if _, err := uuid.Parse(movie_id); err != nil {
+		resp := utility.BuildErrorResponse(http.StatusBadRequest, err, "invalid movie id", http.StatusText(http.StatusBadRequest))
+		c.AbortWithStatusJSON(http.StatusBadRequest, resp)
+		return
+	}
+
+	movie, statusCode, err := movies.GetMovieByID(m.DB, movie_id)
+
+	if err != nil {
+		resp := utility.BuildErrorResponse(statusCode, err, "error getting movie", http.StatusText(statusCode))
+		c.AbortWithStatusJSON(statusCode, resp)
+		return
+	}
+
+	resp := utility.BuildSuccessResponse(statusCode, "movie found", movie, nil)
+	c.JSON(statusCode, resp)
+
 }

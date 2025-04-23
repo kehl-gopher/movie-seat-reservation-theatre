@@ -4,7 +4,6 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/repository"
@@ -25,8 +24,8 @@ type Movie struct {
 	PosterPath   string         `json:"poster_path" gorm:"type:text"`
 	ReleaseDate  Date           `json:"release_date" gorm:"type:date;not null"`
 	Duration     uint8          `json:"duration" gorm:"not null"`
-	CreatedAt    time.Time      `json:"created_at" gorm:"autoCreateTime"`
-	UpdatedAt    time.Time      `json:"updated_at" gorm:"autoUpdateTime"`
+	CreatedAt    time.Time      `json:"-" gorm:"autoCreateTime"`
+	UpdatedAt    time.Time      `json:"-" gorm:"autoUpdateTime"`
 	DeletedAt    gorm.DeletedAt `json:"-" gorm:"index"`
 	Genres       []Genre        `json:"genres" gorm:"many2many:movie_genres;"`
 }
@@ -38,16 +37,15 @@ type Genre struct {
 
 func (d *Date) Scan(value interface{}) error {
 	var t time.Time
-	if err := json.Unmarshal(value.([]byte), &t); err != nil {
-		fmt.Println(err.Error())
-		return err
+	switch value.(type) {
+	case time.Time:
+		t = value.(time.Time)
+	case []byte:
+		t, _ = time.Parse("2006-01-02", string(value.([]byte)))
+	default:
+		return errors.New("failed to scan date")
 	}
-	dt, err := time.Parse("2006-01-02", t.Format("2006-01-02"))
-
-	if err != nil {
-		return err
-	}
-	*d = Date(dt)
+	*d = Date(t)
 	return nil
 }
 
@@ -133,6 +131,12 @@ func (m *Genre) GetAllGenres(db *repository.Database) ([]Genre, error) {
 // TODO: get all movie relations
 func (m *Movie) GetMovieByID(db *repository.Database, id string) (*Movie, error) {
 	movie := &Movie{}
+	preload := postgres.Preload(db.Pdb.DB, movie, `Genres`)
+
+	err := postgres.SelectSingleRecord(preload, `id = ?`, m, movie, id)
+	if err != nil {
+		return nil, err
+	}
 	return movie, nil
 }
 

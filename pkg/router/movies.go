@@ -13,10 +13,10 @@ import (
 func MovieRoutes(router *gin.Engine, config *env.Config, DB *repository.Database) {
 	movieBase := movies.MovieBase{DB: DB, Config: config}
 	secret_key := []byte(config.SECRET_KEY)
-	AuthMovieUrl := router.Group(fmt.Sprintf("%s", config.BASEURL))
+	movieUrl := router.Group(fmt.Sprintf("%s", config.BASEURL))
 	{
-		AuthMovieUrl.POST("/movies", middleware.AuthMiddleWare(string(secret_key), DB), middleware.AuthAdmin(), movieBase.CreateMovie)
-
+		movieUrl.POST("/movies", middleware.AuthMiddleWare(string(secret_key), DB), middleware.AuthAdmin(), movieBase.CreateMovie)
+		movieUrl.GET("/movie/:movieId", movieBase.GetMovie)
 	}
 	// get movie genres
 	genres := router.Group(fmt.Sprintf("%s/genres", config.BASEURL))

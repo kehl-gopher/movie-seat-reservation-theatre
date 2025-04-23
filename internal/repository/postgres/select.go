@@ -73,13 +73,9 @@ func CheckExists(db *gorm.DB, query string, models interface{}, args ...interfac
 	return count > 0, nil
 }
 
-func Preload(db *gorm.DB, preload string, model interface{}, args ...interface{}) error {
-	res := db.Model(model).Preload(preload, args).Find(model)
-	if res.Error != nil {
-		fmt.Println(res.Error, "---------->")
-		return res.Error
-	} else if res.RowsAffected == 0 {
-		return errors.New("No record found")
+func Preload(db *gorm.DB, model interface{}, preloads ...string) *gorm.DB {
+	for _, preload := range preloads {
+		db = db.Preload(preload)
 	}
-	return nil
+	return db
 }

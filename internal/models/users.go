@@ -159,7 +159,8 @@ func (u *Users) UserContextObject(db *repository.Database, id string, rId RoleID
 func (u *Users) PreloadUserRole(db *repository.Database, rId RoleIDs) (*Users, error) {
 	var user = &Users{}
 	query := `id = ?`
-	err := postgres.Preload(db.Pdb.DB, `Role`, user, query, u.ID)
+	preload := postgres.Preload(db.Pdb.DB, user, `Role`)
+	err := postgres.SelectSingleRecord(preload, query, &Users{}, user, u.ID)
 	if err != nil {
 		return nil, err
 	}

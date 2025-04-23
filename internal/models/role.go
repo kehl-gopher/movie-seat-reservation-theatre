@@ -59,7 +59,8 @@ func GetRoleID(db *gorm.DB, rID RoleIDs) (*UserRoleID, error) {
 	query := `id = ?`
 
 	r := strconv.Itoa(int(rID))
-	err := postgres.Preload(db, `Role`, uRole, query, r)
+	preload := postgres.Preload(db, &UserRoleID{}, `Role`)
+	err := postgres.SelectSingleRecord(preload, query, &UserRoleID{}, uRole, r)
 	if err != nil {
 		if errors.Is(gorm.ErrRecordNotFound, err) {
 			return nil, errors.New("role not found")

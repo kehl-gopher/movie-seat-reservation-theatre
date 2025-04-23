@@ -80,3 +80,17 @@ func CreateMovies(db *repository.Database, movie *MovieReq, config *env.Config) 
 	}
 	return http.StatusCreated, nil
 }
+
+func GetMovieByID(db *repository.Database, id string) (*models.Movie, int, error) {
+
+	movie := &models.Movie{}
+
+	mov, err := movie.GetMovieByID(db, id)
+	if err != nil {
+		if errors.Is(err, postgres.ErrNoRecordFound) {
+			return nil, http.StatusNotFound, errors.New("movie not found")
+		}
+		return nil, http.StatusInternalServerError, err
+	}
+	return mov, http.StatusOK, nil
+}
