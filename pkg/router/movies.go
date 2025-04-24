@@ -18,7 +18,8 @@ func MovieRoutes(router *gin.Engine, config *env.Config, DB *repository.Database
 		movieUrl.POST("/movie", middleware.AuthMiddleWare(string(secret_key), DB), middleware.AuthAdmin(), movieBase.CreateMovie)
 		movieUrl.GET("/movies", movieBase.GetMovies)
 		movieUrl.GET("/movie/:movieId", movieBase.GetMovie)
-		movieUrl.PATCH("/movie/:movieId", movieBase.UpdateMovie)
+		movieUrl.PATCH("/movie/:movieId", middleware.AuthMiddleWare(string(secret_key), DB), middleware.AuthAdmin(), movieBase.UpdateMovie)
+		movieUrl.DELETE("/movie/:movieId", middleware.AuthMiddleWare(string(secret_key), DB), middleware.AuthAdmin(), movieBase.DeleteMovie)
 	}
 	// get movie genres
 	genres := router.Group(fmt.Sprintf("%s/genres", config.BASEURL))

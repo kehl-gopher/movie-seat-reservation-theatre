@@ -219,21 +219,21 @@ func UpdateMovie(db *repository.Database, movie_id string, movie *UpdateMovieReq
 	return http.StatusOK, nil
 }
 
-// func DeleteMovie(db *repository.Database, movie_id string) (int, error) {
-// 	m := &models.Movie{}
-// 	// mov, err := m.GetMovieByID(db, movie_id)
+func DeleteMovie(db *repository.Database, movie_id string) (int, error) {
+	m := &models.Movie{}
+	mov, err := m.GetMovieByID(db, movie_id)
 
-// 	if err != nil {
-// 		if errors.Is(err, postgres.ErrNoRecordFound) {
-// 			return http.StatusNotFound, errors.New("movie not found")
-// 		}
-// 		return http.StatusInternalServerError, err
-// 	}
+	if err != nil {
+		if errors.Is(err, postgres.ErrNoRecordFound) {
+			return http.StatusNotFound, errors.New("movie not found")
+		}
+		return http.StatusInternalServerError, err
+	}
 
-// 	// err = mov.DeleteMovie(db)
-// 	// if err != nil {
-// 	// 	fmt.Println(err)
-// 	// 	return http.StatusInternalServerError, err
-// 	// }
-// 	return http.StatusOK, nil
-// }
+	err = mov.DeleteMovie(db)
+	if err != nil {
+		fmt.Println(err)
+		return http.StatusInternalServerError, err
+	}
+	return http.StatusOK, nil
+}

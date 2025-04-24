@@ -116,5 +116,20 @@ func (m *MovieBase) UpdateMovie(c *gin.Context) {
 }
 
 func (m *MovieBase) DeleteMovie(c *gin.Context) {
+	movie_id := utility.GetParams(c, "movieId")
+	if _, err := uuid.Parse(movie_id); err != nil {
+		resp := utility.BuildErrorResponse(http.StatusBadRequest, err, "invalid movie id", http.StatusText(http.StatusBadRequest))
+		c.AbortWithStatusJSON(http.StatusBadRequest, resp)
+		return
+	}
 
+	statusCode, err := movies.DeleteMovie(m.DB, movie_id)
+
+	if err != nil {
+		resp := utility.BuildErrorResponse(statusCode, err, "error deleting movie", http.StatusText(statusCode))
+		c.AbortWithStatusJSON(statusCode, resp)
+		return
+	}
+	resp := utility.BuildSuccessResponse(statusCode, "movie deleted successfully", nil, nil)
+	c.JSON(http.StatusOK, resp)
 }

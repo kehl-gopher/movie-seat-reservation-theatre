@@ -186,7 +186,13 @@ func (m *Movie) UpdateMovie(db *repository.Database, filePath string, bucketName
 }
 
 // TODO: delete movie
-func (m *Movie) DeleteMovie(db *repository.Database, id string) error {
+func (m *Movie) DeleteMovie(db *repository.Database) error {
+
+	err := postgres.DeleteSingleRecord(db.Pdb.DB, `id = ?`, m, m.ID)
+
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
