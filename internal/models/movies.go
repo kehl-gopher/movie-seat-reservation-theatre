@@ -158,7 +158,6 @@ func (m *Movie) UpdateMovie(db *repository.Database, filePath string, bucketName
 	}
 	if obj2 != "" {
 		backdropPath, err = UploadImageToMinio(db.Min, imageBytes[1], filePath, ext2, bucketName, obj2)
-		fmt.Println(obj2)
 		if err != nil {
 			return err
 		}
@@ -169,7 +168,18 @@ func (m *Movie) UpdateMovie(db *repository.Database, filePath string, bucketName
 	m.BackDropPath = backdropPath
 
 	query := `id = ?`
-	if err := postgres.UpdateSingleRecord(db.Pdb.DB, query, m, m.ID); err != nil {
+	err = postgres.UpdateSingleRecord(db.Pdb.DB, query, m, m.ID)
+
+	if err != nil {
+		return err
+	}
+
+	genres := map[string]interface{}{
+		"Genres": m.Genres,
+	}
+	err = postgres.UpdateRelationShipRecord(db.Pdb.DB, m, genres)
+
+	if err != nil {
 		return err
 	}
 	return nil

@@ -199,7 +199,6 @@ func UpdateMovie(db *repository.Database, movie_id string, movie *UpdateMovieReq
 	}
 	if movie.PosterImage != nil {
 		uuID := strings.Split(strings.Split(mov.PosterPath, "_poster")[1], ".")[0] // extract old uuid from image path
-		fmt.Println(uuID)
 		if movie.Title == nil {
 			oldOrNewTitle = mov.Title
 		}
@@ -207,13 +206,11 @@ func UpdateMovie(db *repository.Database, movie_id string, movie *UpdateMovieReq
 	}
 	if movie.BackdropImage != nil {
 		uuID := strings.Split(strings.Split(mov.BackDropPath, "_backdrop")[1], ".")[0] // extract old uuid from image path
-		fmt.Println(uuID)
 		if movie.Title == nil {
 			oldOrNewTitle = mov.Title
 		}
 		bObjName = oldOrNewTitle + "_backdrop" + uuID + "." + extBackdrop
 	}
-	fmt.Println(bObjName, "=======", pObjName)
 	err = mov.UpdateMovie(db, FilePath, config.MINIO_BUCKET, pObjName, bObjName, extPoster, extBackdrop, posterImage, backdropImage)
 	if err != nil {
 		fmt.Println(err)
@@ -221,3 +218,22 @@ func UpdateMovie(db *repository.Database, movie_id string, movie *UpdateMovieReq
 	}
 	return http.StatusOK, nil
 }
+
+// func DeleteMovie(db *repository.Database, movie_id string) (int, error) {
+// 	m := &models.Movie{}
+// 	// mov, err := m.GetMovieByID(db, movie_id)
+
+// 	if err != nil {
+// 		if errors.Is(err, postgres.ErrNoRecordFound) {
+// 			return http.StatusNotFound, errors.New("movie not found")
+// 		}
+// 		return http.StatusInternalServerError, err
+// 	}
+
+// 	// err = mov.DeleteMovie(db)
+// 	// if err != nil {
+// 	// 	fmt.Println(err)
+// 	// 	return http.StatusInternalServerError, err
+// 	// }
+// 	return http.StatusOK, nil
+// }
