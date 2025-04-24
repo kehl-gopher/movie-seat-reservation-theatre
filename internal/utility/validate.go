@@ -113,13 +113,7 @@ func (v *ValidationError) ValidateMovieGenreID(genreID []string) []string {
 	return genreID
 }
 
-// func (v *ValidationError) ValidateMovieReleaseDate(releaseDate string) time.Time {
-// 	if releaseDate == "" {
-// 		v.AddValidationError("release_date", "release_date is required")
-// 		return ""
-// 	}
-// 	return releaseDate
-// }
+
 
 func (v *ValidationError) ValidateMovieDuration(duration uint8) uint8 {
 	if duration == 0 {

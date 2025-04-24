@@ -17,3 +17,7 @@ func GetAllGenres(db *repository.Database) ([]models.Genre, int, error) {
 	}
 	return genres, http.StatusOK, nil
 }
+
+func CreateGenres(db *repository.Database) {
+
+}

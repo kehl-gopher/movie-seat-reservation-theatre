@@ -81,3 +81,40 @@ func (m *MovieBase) GetMovies(c *gin.Context) {
 	c.JSON(statusCode, resp)
 
 }
+
+func (m *MovieBase) UpdateMovie(c *gin.Context) {
+	movie_id := utility.GetParams(c, "movieId")
+	if _, err := uuid.Parse(movie_id); err != nil {
+		resp := utility.BuildErrorResponse(http.StatusBadRequest, err, "invalid movie id", http.StatusText(http.StatusBadRequest))
+		c.AbortWithStatusJSON(http.StatusBadRequest, resp)
+		return
+	}
+
+	mov := &movies.UpdateMovieReq{}
+
+	if err := c.ShouldBindJSON(mov); err != nil {
+		resp := utility.BuildErrorResponse(http.StatusBadRequest, err, "bad request sent", http.StatusText(http.StatusBadRequest))
+		c.AbortWithStatusJSON(http.StatusBadRequest, resp)
+		return
+	}
+
+	statusCode, err := movies.UpdateMovie(m.DB, movie_id, mov, m.Config)
+
+	if err != nil {
+		if err.Error() == "validation error" {
+			v := err.(*utility.ValidationError)
+			resp := utility.ValidationErrorResponse(v.Errors, v)
+			c.AbortWithStatusJSON(http.StatusUnprocessableEntity, resp)
+			return
+		}
+		resp := utility.BuildErrorResponse(statusCode, err, "error updating movie", http.StatusText(statusCode))
+		c.AbortWithStatusJSON(statusCode, resp)
+		return
+	}
+	resp := utility.BuildSuccessResponse(statusCode, "movie updated successfully", nil, nil)
+	c.JSON(http.StatusOK, resp)
+}
+
+func (m *MovieBase) DeleteMovie(c *gin.Context) {
+
+}

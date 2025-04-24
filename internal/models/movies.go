@@ -145,9 +145,34 @@ func (m *Movie) GetAllMoviesWithPagination(db *repository.Database, page, limit 
 }
 
 // TODO: update movies
-func (m *Movie) UpdateMovie(db *repository.Database, id string) (*Movie, error) {
-	movie := &Movie{}
-	return movie, nil
+func (m *Movie) UpdateMovie(db *repository.Database, filePath string, bucketName string, obj1 string, obj2 string, ext1 string, ext2 string, imageBytes ...[]byte) error {
+	// movie := &Movie{}
+	var err error
+	var profilePath, backdropPath string
+	if obj1 != "" {
+		fmt.Println(obj1)
+		profilePath, err = UploadImageToMinio(db.Min, imageBytes[0], filePath, ext1, bucketName, obj1)
+		if err != nil {
+			return nil
+		}
+	}
+	if obj2 != "" {
+		backdropPath, err = UploadImageToMinio(db.Min, imageBytes[1], filePath, ext2, bucketName, obj2)
+		fmt.Println(obj2)
+		if err != nil {
+			return err
+		}
+
+	}
+
+	m.PosterPath = profilePath
+	m.BackDropPath = backdropPath
+
+	query := `id = ?`
+	if err := postgres.UpdateSingleRecord(db.Pdb.DB, query, m, m.ID); err != nil {
+		return err
+	}
+	return nil
 }
 
 // TODO: delete movie
@@ -217,7 +242,6 @@ func (d Duration) Value() (driver.Value, error) {
 
 // marshal json
 func (d Duration) MarshalJSON() ([]byte, error) {
-	fmt.Println("Marshal json")
 	hour := d / 60
 	min := d % 60
 	timeDuration := fmt.Sprintf("%dhr %dmin", hour, min)
@@ -225,7 +249,6 @@ func (d Duration) MarshalJSON() ([]byte, error) {
 }
 
 func (d *Duration) UnmarshalJSON(b []byte) error {
-	fmt.Println("unmarshal json..........>")
 	var t string
 	if err := json.Unmarshal(b, &t); err != nil {
 		return err
@@ -235,6 +258,5 @@ func (d *Duration) UnmarshalJSON(b []byte) error {
 		return err
 	}
 	*d = Duration(dt)
-	fmt.Println(*d, "--------------------->")
 	return nil
 }
