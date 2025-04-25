@@ -199,11 +199,19 @@ func (m *Movie) DeleteMovie(db *repository.Database) error {
 // custom type for date
 func (d *Date) Scan(value interface{}) error {
 	var t time.Time
+	var err error
 	switch value.(type) {
 	case time.Time:
 		t = value.(time.Time)
+		t, err = time.Parse("2006-01-02", t.Format("2006-01-02"))
+		if err != nil {
+			return err
+		}
 	case []byte:
-		t, _ = time.Parse("2006-01-02", string(value.([]byte)))
+		t, err = time.Parse("2006-01-02", string(value.([]byte)))
+		if err != nil {
+			return err
+		}
 	default:
 		return errors.New("failed to scan date")
 	}

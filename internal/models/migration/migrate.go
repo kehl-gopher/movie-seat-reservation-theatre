@@ -17,6 +17,8 @@ func MigrateModel() []interface{} {
 		&models.AccessToken{},
 		&models.Genre{},
 		&models.Movie{},
+		&models.Halls{},
+		&models.Seats{},
 	}
 }
 

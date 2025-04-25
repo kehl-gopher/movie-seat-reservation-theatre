@@ -10,6 +10,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/minio/minio-go/v7 v7.0.90
 	github.com/redis/go-redis/v9 v9.7.3
+	github.com/shopspring/decimal v1.4.0
 	github.com/spf13/viper v1.20.1
 	gorm.io/driver/postgres v1.5.11
 	gorm.io/gorm v1.25.12
