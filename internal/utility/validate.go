@@ -10,6 +10,7 @@ import (
 )
 
 var NameRegexPattern = `^[A-Za-z]+$`
+var HallNameRegexPattern = `^[A-Za-z0-9\s]+$`
 
 func (v *ValidationError) Error() string {
 	return fmt.Sprintf("validation error")
@@ -113,8 +114,6 @@ func (v *ValidationError) ValidateMovieGenreID(genreID []string) []string {
 	return genreID
 }
 
-
-
 func (v *ValidationError) ValidateMovieDuration(duration uint8) uint8 {
 	if duration == 0 {
 		v.AddValidationError("duration", "duration is required")
@@ -173,4 +172,12 @@ func ChecksupportedImageFormat(base64Image string) bool {
 		continue
 	}
 	return false
+}
+
+func (v *ValidationError) ValidateHallName(hallName string) bool {
+	if !MatchRegexPattern(hallName, HallNameRegexPattern) {
+		v.AddValidationError("hall_name", "hall name cannot contain invalid character")
+		return false
+	}
+	return true
 }

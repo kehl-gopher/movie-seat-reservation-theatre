@@ -20,7 +20,7 @@ func Create(db *gorm.DB, model interface{}) error {
 	return nil
 }
 
-func CreateMany(db *gorm.DB, model []interface{}) error {
+func CreateMany[T any](db *gorm.DB, model []T) error {
 	result := db.Create(model)
 
 	if result.Error != nil {
