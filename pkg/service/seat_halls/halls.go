@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/env"
+	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/models"
 	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/repository"
 	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/utility"
 )
@@ -27,14 +28,17 @@ func ValidateHallInputs(hallName string, rows, numberOfSeats int) error {
 	}
 	return nil
 }
-func CreateHallSeat(db *repository.Database, env *env.Config, hallName string, rows, numberOfSeats int) (int, error) {
+func CreateHallSeat(db *repository.Database, config *env.Config, hallName string, rows, numberOfSeats int) (*models.Halls, int, error) {
 
 	err := ValidateHallInputs(hallName, rows, numberOfSeats)
 	if err != nil {
-		return http.StatusUnprocessableEntity, err
+		return nil, http.StatusUnprocessableEntity, err
 	}
-	
-	
-	
-	return 0, nil
+
+	halls := models.Halls{Name: hallName}
+	data, statusCode, err := halls.CreateHallSeat(db, config, rows, numberOfSeats)
+	if err != nil {
+		return nil, statusCode, err
+	}
+	return data, statusCode, nil
 }

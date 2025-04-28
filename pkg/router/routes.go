@@ -15,6 +15,7 @@ func Router(config *env.Config, DB *repository.Database) error {
 	RunApp(router, config)
 	AuthRoutes(router, config, DB)
 	MovieRoutes(router, config, DB)
+	SeatHallRoutes(router, DB, config)
 
 	lstn := fmt.Sprintf("%s:%s", config.APP_HOST, config.APP_PORT)
 	err := router.Run(lstn)

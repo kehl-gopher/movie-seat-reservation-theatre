@@ -7,6 +7,7 @@ import (
 	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/env"
 	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/repository"
 	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/utility"
+	seathalls "github.com/kehl-gopher/movie-seat-reservation-theatre/pkg/service/seat_halls"
 )
 
 type SeatHallBase struct {
@@ -27,4 +28,20 @@ func (h *SeatHallBase) CreateSeatHall(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, resp)
 		return
 	}
+
+	data, statusCode, err := seathalls.CreateHallSeat(h.DB, h.Config, SeatHalls.HallName, SeatHalls.NumberOfRows, SeatHalls.NumberOfSeats)
+	if err != nil {
+		if err.Error() == "validation error" {
+			v := err.(*utility.ValidationError)
+			resp := utility.ValidationErrorResponse(v.Errors, v)
+			c.JSON(http.StatusUnprocessableEntity, resp)
+			return
+		}
+		resp := utility.BuildErrorResponse(statusCode, err, "", http.StatusText(statusCode))
+		c.JSON(statusCode, resp)
+		return
+	}
+
+	resp := utility.BuildSuccessResponse(statusCode, "created successfully", data, nil)
+	c.JSON(statusCode, resp)
 }
