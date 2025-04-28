@@ -3,7 +3,6 @@ package models
 import (
 	"database/sql/driver"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -52,14 +51,12 @@ type Seats struct {
 	Number int        `json:"number" gorm:"not null;uniqueIndex:idx_row_number_hall_id"`
 	Status SeatStatus `json:"status" gorm:"not null;type:seat_status;default:'available';index"`
 	HeldAt *time.Time `json:"held_at" gorm:"default:NULL"`
-	HallID string     `json:"hall_id" gorm:"not null;uniqueIndex:idx_row_number_hall_id;index"`
-	Halls  Halls      `json:"halls" gorm:"foreignKey:HallID;references:ID"`
+	HallID string     `json:"-" gorm:"not null;uniqueIndex:idx_row_number_hall_id;index"`
 }
 
 const MaxCinemaCapacity = 5000 // maximum cinema capacity
 
 func generateRowsAndSeats(hall Halls, rowLabels, seatCount int) ([]Seats, error) {
-
 	if rowLabels*seatCount > MaxCinemaCapacity {
 		return nil, fmt.Errorf("theater exceeds maximum allowed capacity of %d seat", MaxCinemaCapacity)
 	}
@@ -73,7 +70,6 @@ func generateRowsAndSeats(hall Halls, rowLabels, seatCount int) ([]Seats, error)
 				Number: s,
 				Status: Available,
 				HallID: hall.ID,
-				Halls:  hall,
 			}
 			seats[r*seatCount+s-1] = seat
 		}
@@ -106,24 +102,20 @@ func (h *Halls) CreateHallSeat(db *repository.Database, config *env.Config, rowC
 	err := postgres.Create(db.Pdb.DB, h)
 
 	if err != nil {
-		fmt.Println(err)
-		if errors.Is(err, gorm.ErrDuplicatedKey) {
-			return nil, http.StatusBadRequest, fmt.Errorf("hall name already exists %v", err.Error())
+		if strings.Contains(err.Error(), `duplicate key value violates unique constraint "uni_halls_name"`) {
+			return nil, http.StatusBadRequest, fmt.Errorf("hall name already exist")
 		}
-		fmt.Println(err)
 		return nil, http.StatusInternalServerError, err
 	}
-
 	seats, err := generateRowsAndSeats(*h, rowCount, seatCount)
-
 	if err != nil {
 		if err.Error() == fmt.Sprintf("theater exceeds maximum allowed capacity of %d seat", MaxCinemaCapacity) {
 			return nil, http.StatusBadRequest, err
 		}
 		return nil, http.StatusInternalServerError, err
 	}
-
 	err = postgres.CreateMany(db.Pdb.DB, seats)
+
 	if err != nil {
 		return nil, http.StatusInternalServerError, err
 	}
@@ -139,7 +131,8 @@ func (h *Halls) CreateHallSeat(db *repository.Database, config *env.Config, rowC
 }
 
 func (s SeatStatus) MarshalJSON() ([]byte, error) {
-	return json.Marshal(s)
+	str := string(s)
+	return json.Marshal(str)
 }
 
 func (s *SeatStatus) UnmarshalJSON(data []byte) error {
@@ -164,5 +157,5 @@ func (s *SeatStatus) Scan(value interface{}) error {
 	return fmt.Errorf("invalid seat status: %v", value)
 }
 func (s SeatStatus) Value() (driver.Value, error) {
-	return s, nil
+	return string(s), nil
 }

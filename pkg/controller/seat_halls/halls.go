@@ -41,7 +41,6 @@ func (h *SeatHallBase) CreateSeatHall(c *gin.Context) {
 		c.JSON(statusCode, resp)
 		return
 	}
-
 	resp := utility.BuildSuccessResponse(statusCode, "created successfully", data, nil)
 	c.JSON(statusCode, resp)
 }
