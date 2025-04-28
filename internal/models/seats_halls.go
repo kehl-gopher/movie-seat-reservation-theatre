@@ -48,9 +48,9 @@ func (s *SeatStatus) String() string {
 
 type Seats struct {
 	ID     string     `json:"id" gorm:"primaryKey;not null"`
-	Row    string     `json:"row" gorm:"not null;uniqueIndex:idx_row_number_hall_id"`
+	Row    string     `json:"row" gorm:"type:varchar(5);not null;uniqueIndex:idx_row_number_hall_id"`
 	Number int        `json:"number" gorm:"not null;uniqueIndex:idx_row_number_hall_id"`
-	Status SeatStatus `json:"status" gorm:"not null;type:enum('available','held','booked');default:'available';index"`
+	Status SeatStatus `json:"status" gorm:"not null;type:seat_status;default:'available';index"`
 	HeldAt *time.Time `json:"held_at" gorm:"default:NULL"`
 	HallID string     `json:"hall_id" gorm:"not null;uniqueIndex:idx_row_number_hall_id;index"`
 	Halls  Halls      `json:"halls" gorm:"foreignKey:HallID;references:ID"`
