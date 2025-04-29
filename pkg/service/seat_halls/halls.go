@@ -43,6 +43,14 @@ func CreateHallSeat(db *repository.Database, config *env.Config, hallName string
 	return data, statusCode, nil
 }
 
+// TBF there's no reason for me to be returning a reference of the object
+// it's just plain out laziness in my CodeBase of having to write the whole code
+// sheeeessh lazy fuck ain't it
+func GetAllHalls(db *repository.Database, config *env.Config) (*models.Halls, int, error) {
+	return nil, 0, nil
+}
+
+// sheeesh so dumb he could not figure out how to handle... validation logic for simple hall updates... FUCK...
 func ValidateHallUpdateInputs(hallName string, rows, numberOfSeats int) error {
 	v := utility.NewValidationError()
 

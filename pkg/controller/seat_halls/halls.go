@@ -46,8 +46,11 @@ func (h *SeatHallBase) CreateSeatHall(c *gin.Context) {
 	c.JSON(statusCode, resp)
 }
 
+func (h *SeatHallBase) GetAllHalls(c *gin.Context) {
+	
+}
 
-// TODO: Implement user 
+// TODO: Implement admin updating seat hall later stupid fuck
 func (h *SeatHallBase) UpdateSeatHall(c *gin.Context) {
 
 	hallID := utility.GetParams(c, "hallID")

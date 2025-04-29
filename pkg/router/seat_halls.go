@@ -11,9 +11,9 @@ import (
 )
 
 func SeatHallRoutes(r *gin.Engine, db *repository.Database, config *env.Config) {
-	seatHall := r.Group(fmt.Sprintf("%s", config.BASEURL), middleware.AuthMiddleWare(config.SECRET_KEY, db), middleware.AuthAdmin())
+	seatHall := r.Group(fmt.Sprintf("%s/admin/seat-hall", config.BASEURL), middleware.AuthMiddleWare(config.SECRET_KEY, db), middleware.AuthAdmin())
 	hallBase := seathalls.SeatHallBase{DB: db, Config: config}
 	{
-		seatHall.POST("/seat-hall", hallBase.CreateSeatHall)
+		seatHall.POST("/", hallBase.CreateSeatHall)
 	}
 }
