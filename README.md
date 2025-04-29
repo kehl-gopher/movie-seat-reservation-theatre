@@ -9,13 +9,9 @@
 | Layer          | Technology                  |
 |----------------|-----------------------------|
 | Language       | Go (Golang)                 |
-| ORM            | GORM                        |
 | Database       | PostgreSQL                  |
 | Caching        | Redis                       |
-| Auth           | JWT + Google OAuth2         |
 | Payment        | Paystack                    |
-| QR Code        | go-qrcode                   |
-| Email Service  | Mailgun or SMTP             |
 
 ---
 
