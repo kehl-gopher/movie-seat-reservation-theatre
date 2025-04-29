@@ -67,7 +67,7 @@
 
 | Flow               | Description                                                                 |
 |--------------------|-----------------------------------------------------------------------------|
-| **Auth**           | JWT + Refresh tokens, email verification, Google OAuth2 login               |
+| **Auth**           | JWT , email verification, Google OAuth2 login               |
 | **Booking**        | Seats held temporarily in Redis, then confirmed post-payment                |
 | **QR Code**        | Unique per ticket, scanned at cinema entrance for verification              |
 | **Pricing**        | Controlled per show by admin; stored as `Decimal(10,2)` in DB               |

@@ -47,7 +47,14 @@ func (h *SeatHallBase) CreateSeatHall(c *gin.Context) {
 }
 
 func (h *SeatHallBase) GetAllHalls(c *gin.Context) {
-	
+	data, statusCode, err := seathalls.GetAllHalls(h.DB, h.Config)
+	if err != nil {
+		resp := utility.BuildErrorResponse(statusCode, err, "", http.StatusText(statusCode))
+		c.JSON(statusCode, resp)
+		return
+	}
+	resp := utility.BuildSuccessResponse(statusCode, "created successfully", data, nil)
+	c.JSON(statusCode, resp)
 }
 
 // TODO: Implement admin updating seat hall later stupid fuck

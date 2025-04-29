@@ -1,11 +1,13 @@
 package seathalls
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/env"
 	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/models"
 	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/repository"
+	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/repository/postgres"
 	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/utility"
 )
 
@@ -46,8 +48,17 @@ func CreateHallSeat(db *repository.Database, config *env.Config, hallName string
 // TBF there's no reason for me to be returning a reference of the object
 // it's just plain out laziness in my CodeBase of having to write the whole code
 // sheeeessh lazy fuck ain't it
-func GetAllHalls(db *repository.Database, config *env.Config) (*models.Halls, int, error) {
-	return nil, 0, nil
+func GetAllHalls(db *repository.Database, config *env.Config) ([]models.Halls, int, error) {
+	h := models.Halls{}
+
+	halls, err := h.GetAllHalls(db)
+	if err != nil {
+		if errors.Is(postgres.ErrNoRecordFound, err) {
+			return nil, http.StatusNotFound, errors.New("no Halls found")
+		}
+		return nil, http.StatusInternalServerError, err
+	}
+	return halls, http.StatusCreated, nil
 }
 
 // sheeesh so dumb he could not figure out how to handle... validation logic for simple hall updates... FUCK...

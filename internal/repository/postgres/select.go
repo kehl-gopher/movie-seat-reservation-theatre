@@ -40,12 +40,12 @@ func GetPagination(offset, limit uint) Pagination {
 	}
 }
 
-func SelectAllRecords(db *gorm.DB, orderBy, value string, models interface{}, receiver interface{}) error {
+func SelectAllRecords(db *gorm.DB, orderBy, order string, models interface{}, receiver interface{}) error {
 
-	if orderBy == "" && value == "" {
+	if orderBy == "" && order == "" {
 		orderBy = fmt.Sprintf("%s %s", "id", "asc")
 	} else {
-		orderBy = fmt.Sprintf("%s %s", value, orderBy)
+		orderBy = fmt.Sprintf("%s %s", order, orderBy)
 	}
 	res := db.Model(models).Order(orderBy).Find(receiver)
 	if res.Error != nil {
