@@ -19,7 +19,7 @@ import (
 type Halls struct {
 	ID        string         `json:"id" gorm:"primaryKey"`
 	Name      string         `json:"name" gorm:"type:varchar(20);not null;unique;index"`
-	Seats     []Seats        `json:"seats;omitempty" gorm:"foreignKey:HallID;references:ID"`
+	Seats     []Seats        `json:"seats,omitempty" gorm:"foreignKey:HallID;references:ID"`
 	CreatedAt time.Time      `json:"created_at" gorm:"autoCreatedAt"`
 	UpdatedAt time.Time      `json:"updated_at" gorm:"autoUpdateAt"`
 	DeletedAt gorm.DeletedAt `json:"-" gorm:"index"`

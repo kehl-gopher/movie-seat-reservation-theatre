@@ -76,6 +76,10 @@ func (h *SeatHallBase) GetHall(c *gin.Context) {
 	c.JSON(statusCode, resp)
 }
 
+func (h *SeatHallBase) DeleteHall(c *gin.Context) {
+	
+}
+
 // TODO: Implement admin updating seat hall later stupid fuck
 func (h *SeatHallBase) UpdateSeatHall(c *gin.Context) {
 

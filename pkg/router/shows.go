@@ -16,5 +16,6 @@ func ShowRoutes(r *gin.Engine, db *repository.Database, config *env.Config) {
 	showRoutes := r.Group(fmt.Sprintf("%s/admin/show", config.BASEURL), middleware.AuthMiddleWare(config.SECRET_KEY, db), middleware.AuthAdmin())
 	{
 		showRoutes.POST("/", showBase.CreateShows)
+		showRoutes.GET("/", showBase.GetShows)
 	}
 }

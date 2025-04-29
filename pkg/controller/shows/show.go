@@ -67,3 +67,20 @@ func (s *ShowBase) CreateShows(c *gin.Context) {
 	resp := utility.BuildSuccessResponse(statusCode, "show time created successfully", nil, nil)
 	c.JSON(statusCode, resp)
 }
+
+func (s *ShowBase) GetShows(c *gin.Context) {
+
+	data, statusCode, err := shows.GetAllShows(s.DB)
+	if err != nil {
+		resp := utility.BuildErrorResponse(statusCode, err, "", http.StatusText(statusCode))
+		c.JSON(statusCode, resp)
+		return
+	}
+
+	resp := utility.BuildSuccessResponse(statusCode, "fetched successful", data, nil)
+	c.JSON(statusCode, resp)
+}
+
+func (s *ShowBase) UpdateShows(c *gin.Context) {
+
+}

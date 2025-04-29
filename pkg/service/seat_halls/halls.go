@@ -74,6 +74,10 @@ func GetHallDetails(db *repository.Database, config *env.Config, hallId string) 
 	return hall, http.StatusOK, nil
 }
 
+func DeleteHalls(db *repository.Database, hallId string) (int, error) {
+	return 0, nil
+}
+
 // sheeesh so dumb he could not figure out how to handle... validation logic for simple hall updates... FUCK...
 func ValidateHallUpdateInputs(hallName string, rows, numberOfSeats int) error {
 	v := utility.NewValidationError()

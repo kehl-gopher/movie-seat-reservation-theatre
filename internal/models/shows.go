@@ -59,24 +59,33 @@ func (s *Shows) CreateMovieShows(db *repository.Database) error {
 	return nil
 
 }
-func (s *ShowTime) Scan(value interface{}) error {
 
-	if t, ok := value.(time.Time); ok {
-		t, err := time.Parse("15:04", t.Format("15:04"))
-		if err != nil {
-			return err
-		}
-		*s = ShowTime(t)
+func (t *ShowTime) Scan(value interface{}) error {
+	switch v := value.(type) {
+	case time.Time:
+		*t = ShowTime(v)
 		return nil
-	} else if t, ok := value.([]byte); ok {
-		t, err := time.Parse("15:04", string(t))
+	case string:
+		parsed, err := time.Parse("15:04:05", v)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to parse ShowTime from string: %v", err)
 		}
-		*s = ShowTime(t)
+		*t = ShowTime(parsed)
 		return nil
+	default:
+		return fmt.Errorf("cannot scan type %T into ShowTime", value)
 	}
-	return fmt.Errorf("failed to scan ShowTime: %v", value)
+}
+
+func (s *Shows) GetAllShows(db *repository.Database) ([]Shows, error) {
+	shows := []Shows{}
+	tx := postgres.Preload(db.Pdb.DB, s, `Movie`, `Hall`)
+	err := postgres.SelectAllRecords(tx, "desc", "created_at", s, &shows)
+
+	if err != nil {
+		return nil, err
+	}
+	return shows, nil
 }
 
 func (s ShowTime) Value() (driver.Value, error) {

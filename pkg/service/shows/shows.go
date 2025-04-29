@@ -1,11 +1,13 @@
 package shows
 
 import (
+	"errors"
 	"net/http"
 	"time"
 
 	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/models"
 	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/repository"
+	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/repository/postgres"
 	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/utility"
 	"github.com/shopspring/decimal"
 )
@@ -67,4 +69,17 @@ func CreateShow(db *repository.Database, movieId, hallId string, price decimal.D
 		return http.StatusInternalServerError, err
 	}
 	return http.StatusCreated, nil
+}
+
+func GetAllShows(db *repository.Database) ([]models.Shows, int, error) {
+	s := models.Shows{}
+
+	shows, err := s.GetAllShows(db)
+	if err != nil {
+		if errors.Is(postgres.ErrNoRecordFound, err) {
+			return nil, http.StatusNotFound, err
+		}
+		return nil, http.StatusInternalServerError, err
+	}
+	return shows, http.StatusOK, nil
 }
