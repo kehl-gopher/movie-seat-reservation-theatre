@@ -144,6 +144,9 @@ func SelectSingleRecord(db *gorm.DB, query string, model interface{}, receiver i
 func SelectById(db *gorm.DB, id interface{}, models interface{}, receiver interface{}) error {
 	res := db.Model(models).Where(`id = ?`, id).First(receiver)
 	if res.Error != nil {
+		if errors.Is(gorm.ErrRecordNotFound, res.Error) {
+			return ErrNoRecordFound
+		}
 		return res.Error
 	}
 	return nil

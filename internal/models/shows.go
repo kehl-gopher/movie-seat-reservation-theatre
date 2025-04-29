@@ -8,7 +8,9 @@ import (
 
 	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/repository"
 	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/repository/postgres"
+	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/utility"
 	"github.com/shopspring/decimal"
+	"gorm.io/gorm"
 )
 
 type ShowTime time.Time
@@ -27,6 +29,11 @@ type Shows struct {
 	Hall      Halls           `json:"hall" gorm:"foreignKey:HallID;references:ID"`
 }
 
+func (s *Shows) BeforeCreate(tx *gorm.DB) error {
+	s.ID = utility.GenerateUUID()
+
+	return nil
+}
 func (s *Shows) CreateMovieShows(db *repository.Database) error {
 
 	h := Halls{ID: s.HallID}

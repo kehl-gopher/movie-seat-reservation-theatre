@@ -49,6 +49,14 @@ func (s *ShowBase) CreateShows(c *gin.Context) {
 		return
 	}
 
-	_, err = shows.CreateShow(movieId.String(), hallId.String(), Shows.Price, Shows.StartTime, Shows.EndTime, Shows.StartDate)
+	statusCode, err := shows.CreateShow(s.DB, movieId.String(), hallId.String(), Shows.Price, Shows.StartTime, Shows.EndTime, Shows.StartDate)
 
+	if err != nil {
+		resp := utility.BuildErrorResponse(statusCode, err, "", http.StatusText(statusCode))
+		c.JSON(statusCode, resp)
+		return
+	}
+
+	resp := utility.BuildSuccessResponse(statusCode, "show time created successfully", nil, nil)
+	c.JSON(statusCode, resp)
 }

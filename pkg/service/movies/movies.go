@@ -91,8 +91,8 @@ func GetMovieByID(db *repository.Database, id string) (*models.Movie, int, error
 
 	mov, err := movie.GetMovieByID(db, id)
 	if err != nil {
-		if errors.Is(err, postgres.ErrNoRecordFound) {
-			return nil, http.StatusNotFound, errors.New("movie not found")
+		if err.Error() == "movie not found" {
+			return nil, http.StatusNotFound, err
 		}
 		return nil, http.StatusInternalServerError, err
 	}

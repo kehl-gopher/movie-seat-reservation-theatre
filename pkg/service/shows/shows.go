@@ -1,10 +1,13 @@
 package shows
 
 import (
+	"errors"
 	"net/http"
 	"time"
 
 	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/models"
+	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/repository"
+	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/repository/postgres"
 	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/utility"
 	"github.com/shopspring/decimal"
 )
@@ -40,11 +43,30 @@ func ValidateCreateShowEntry(startTime, endTime models.ShowTime, startDate model
 	return nil
 }
 
-func CreateShow(movieId, hallId string, price decimal.Decimal, startTime, endTime models.ShowTime, startDate models.Date) (int, error) {
+func CreateShow(db *repository.Database, movieId, hallId string, price decimal.Decimal, startTime, endTime models.ShowTime, startDate models.Date) (int, error) {
 
 	err := ValidateCreateShowEntry(startTime, endTime, startDate, price)
 	if err != nil {
 		return http.StatusUnprocessableEntity, err
 	}
-	return 0, nil
+
+	shows := models.Shows{
+		StartDate: startDate,
+		StartTime: startTime,
+		EndTime:   endTime,
+		Price:     price,
+		HallID:    hallId,
+		MovieID:   movieId,
+	}
+
+	err = shows.CreateMovieShows(db)
+
+	if err != nil {
+		if errors.Is(postgres.ErrNoRecordFound, err) {
+			return http.StatusNotFound, err
+		}
+
+		return http.StatusInternalServerError, err
+	}
+	return http.StatusCreated, nil
 }

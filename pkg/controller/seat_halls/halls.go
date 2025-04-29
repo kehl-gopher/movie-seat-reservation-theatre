@@ -46,6 +46,8 @@ func (h *SeatHallBase) CreateSeatHall(c *gin.Context) {
 	c.JSON(statusCode, resp)
 }
 
+
+// TODO: Implement user 
 func (h *SeatHallBase) UpdateSeatHall(c *gin.Context) {
 
 	hallID := utility.GetParams(c, "hallID")

@@ -111,6 +111,9 @@ func (m *Movie) GetMovieByID(db *repository.Database, id string) (*Movie, error)
 
 	err := postgres.SelectSingleRecord(preload, `id = ?`, m, movie, id)
 	if err != nil {
+		if errors.Is(postgres.ErrNoRecordFound, err) {
+			return nil, errors.New("movie not found")
+		}
 		return nil, err
 	}
 	return movie, nil

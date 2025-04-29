@@ -3,6 +3,7 @@ package models
 import (
 	"database/sql/driver"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -134,6 +135,9 @@ func (h *Halls) GetHall(db *repository.Database) (*Halls, error) {
 	hall := &Halls{}
 	err := postgres.SelectById(db.Pdb.DB, h.ID, h, hall)
 	if err != nil {
+		if errors.Is(postgres.ErrNoRecordFound, err) {
+			return nil, errors.New("theatre hall not found")
+		}
 		return nil, err
 	}
 	return hall, nil
