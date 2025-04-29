@@ -28,6 +28,8 @@
 - Email verification required before booking
 - View available movies and showtimes
 
+
+
 ### 💺 Seat Booking Flow
 1. Select a movie and preferred showtime
 2. Pick available seats

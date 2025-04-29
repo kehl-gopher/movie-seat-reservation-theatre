@@ -157,7 +157,7 @@ func (h *Halls) CreateHallSeat(db *repository.Database, config *env.Config, rowC
 func (h *Halls) GetAllHalls(db *repository.Database) ([]HallResponse, error) {
 	halls := []HallResponse{}
 
-	err := postgres.SelectAllRecords(db.Pdb.DB, "created_at", "desc", h, &halls)
+	err := postgres.SelectAllRecords(db.Pdb.DB, "desc", "created_at", h, &halls)
 
 	if err != nil {
 		return nil, err
