@@ -89,7 +89,7 @@ func GetMovieByID(db *repository.Database, id string) (*models.Movie, int, error
 
 	movie := &models.Movie{}
 
-	mov, err := movie.GetMovieByID(db, id)
+	mov, err := movie.GetDetailMovie(db, id)
 	if err != nil {
 		if err.Error() == "movie not found" {
 			return nil, http.StatusNotFound, err

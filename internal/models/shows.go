@@ -26,7 +26,7 @@ type Shows struct {
 	Price     decimal.Decimal `json:"price" gorm:"type:Decimal(10, 2);not null"`
 	CreatedAt time.Time       `json:"created_at" gorm:"autoCreateTime"`
 	UpdatedAt time.Time       `json:"updated_at" gorm:"autoUpdateTime"`
-	Movie     Movie           `json:"movie" gorm:"foreignKey:MovieID;references:ID"`
+	Movie     *Movie          `json:"movie,omitempty" gorm:"foreignKey:MovieID;references:ID"`
 	Hall      Halls           `json:"hall" gorm:"foreignKey:HallID;references:ID"`
 }
 

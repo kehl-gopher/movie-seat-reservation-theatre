@@ -32,6 +32,7 @@ type Movie struct {
 	UpdatedAt    time.Time      `json:"-" gorm:"autoUpdateTime"`
 	DeletedAt    gorm.DeletedAt `json:"-" gorm:"index"`
 	Genres       []Genre        `json:"genres" gorm:"many2many:movie_genres;"`
+	Shows        []Shows        `json:"shows" gorm:"foreignKey:MovieID;references:ID"`
 }
 
 type Genre struct {
@@ -39,13 +40,28 @@ type Genre struct {
 	Name string `json:"name" gorm:"type:text;not null;unique;index"`
 }
 
+// type MovieDetailResponse struct {
+// 	ID           string         `json:"id"`
+// 	Title        string         `json:"title"`
+// 	Synopsis     string         `json:"synopsis" `
+// 	BackDropPath string         `json:"backdrop_path"`
+// 	PosterPath   string         `json:"poster_path"`
+// 	ReleaseDate  Date           `json:"release_date"`
+// 	Duration     Duration       `json:"duration"`
+// 	CreatedAt    time.Time      `json:"-"`
+// 	UpdatedAt    time.Time      `json:"-"`
+// 	DeletedAt    gorm.DeletedAt `json:"-"`
+// 	Genres       []Genre        `json:"genres"`
+// 	Shows        []Shows        `json:"shows"`
+// }
+
 type MovieResponse struct {
 	ID          string   `json:"id"`
 	Title       string   `json:"title"`
 	PosterPath  string   `json:"poster_path"`
 	ReleaseDate Date     `json:"release_date"`
 	Duration    Duration `json:"duration"`
-	Url         string   `json:"url,omitempty" gorm:"-"`
+	Url         string   `json:"url" gorm:"-"`
 }
 
 func (m *Movie) BeforeCreate(tx *gorm.DB) error {
@@ -105,9 +121,9 @@ func (m *Genre) GetAllGenres(db *repository.Database) ([]Genre, error) {
 }
 
 // TODO: get all movie relations
-func (m *Movie) GetMovieByID(db *repository.Database, id string) (*Movie, error) {
+func (m *Movie) GetDetailMovie(db *repository.Database, id string) (*Movie, error) {
 	movie := &Movie{}
-	preload := postgres.Preload(db.Pdb.DB, movie, `Genres`)
+	preload := postgres.Preload(db.Pdb.DB, movie, `Genres`, `Shows`, `Shows.Hall`, `Shows.Hall.Seats`)
 
 	err := postgres.SelectSingleRecord(preload, `id = ?`, m, movie, id)
 	if err != nil {
@@ -117,6 +133,19 @@ func (m *Movie) GetMovieByID(db *repository.Database, id string) (*Movie, error)
 		return nil, err
 	}
 	return movie, nil
+}
+
+func (m *Movie) GetMovieByID(db *repository.Database, id string) (*Movie, error) {
+	movie := &Movie{}
+	err := postgres.SelectSingleRecord(db.Pdb.DB, `id = ?`, m, movie, id)
+	if err != nil {
+		if errors.Is(postgres.ErrNoRecordFound, err) {
+			return nil, errors.New("movie not found")
+		}
+		return nil, err
+	}
+	return movie, nil
+
 }
 
 // TODO: get all movies with paginations paginations
