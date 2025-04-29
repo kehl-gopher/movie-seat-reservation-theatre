@@ -1,6 +1,3 @@
-# This repo is under construction
-
-
 # 🎬 Movy — Movie Seat Reservation System
 
 **Movy** is a full-featured backend system for a cinema to manage and streamline movie scheduling, seat reservations, and ticketing. Designed for **a single theater (admin)**, users can register, browse upcoming shows, reserve seats, pay securely, and receive scannable QR code tickets. Built with **Go**, **PostgreSQL**, **Redis**, and modern authentication/payment systems.
@@ -102,3 +99,6 @@ go run main.go
 
 ## 📬 Contact
 For questions, suggestions, or support, please open an issue or reach out to the project maintainer (kelanidarasimi9@gmail.com).
+
+
+# NB: This repo is under construction
