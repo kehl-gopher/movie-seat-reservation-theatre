@@ -19,7 +19,7 @@ import (
 type Halls struct {
 	ID        string         `json:"id" gorm:"primaryKey"`
 	Name      string         `json:"name" gorm:"type:varchar(20);not null;unique;index"`
-	Seats     []Seats        `json:"seats" gorm:"foreignKey:HallID;references:ID"`
+	Seats     []Seats        `json:"seats;omitempty" gorm:"foreignKey:HallID;references:ID"`
 	CreatedAt time.Time      `json:"created_at" gorm:"autoCreatedAt"`
 	UpdatedAt time.Time      `json:"updated_at" gorm:"autoUpdateAt"`
 	DeletedAt gorm.DeletedAt `json:"-" gorm:"index"`
@@ -55,7 +55,30 @@ type Seats struct {
 	HallID string     `json:"-" gorm:"not null;uniqueIndex:idx_row_number_hall_id;index"`
 }
 
-const MaxCinemaCapacity = 5000 // maximum cinema capacity
+type HallResponse struct {
+	ID        string    `json:"id"`
+	Name      string    `json:"name"`
+	Url       string    `json:"url" gorm:"-"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+func buildHallUrl(hs []HallResponse) []HallResponse {
+	var halls []HallResponse
+	for _, hall := range hs {
+		h := HallResponse{
+			ID:        hall.ID,
+			Name:      hall.Name,
+			Url:       fmt.Sprintf("/seat-hall/%s", hall.ID),
+			CreatedAt: hall.CreatedAt,
+			UpdatedAt: hall.UpdatedAt,
+		}
+		halls = append(halls, h)
+	}
+	return halls
+}
+
+const MaxCinemaCapacity = 5000 // maximum cinema capacity expected and must not be exceeeded
 
 func generateRowsAndSeats(hall Halls, rowLabels, seatCount int) ([]Seats, error) {
 	if rowLabels*seatCount > MaxCinemaCapacity {
@@ -131,14 +154,16 @@ func (h *Halls) CreateHallSeat(db *repository.Database, config *env.Config, rowC
 	return hall, http.StatusCreated, err
 }
 
-func (h *Halls) GetAllHalls(db *repository.Database) ([]Halls, error) {
-	halls := []Halls{}
+func (h *Halls) GetAllHalls(db *repository.Database) ([]HallResponse, error) {
+	halls := []HallResponse{}
 
 	err := postgres.SelectAllRecords(db.Pdb.DB, "created_at", "desc", h, &halls)
 
 	if err != nil {
 		return nil, err
 	}
+
+	halls = buildHallUrl(halls)
 	return halls, nil
 }
 
