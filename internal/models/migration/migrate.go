@@ -19,6 +19,7 @@ func MigrateModel() []interface{} {
 		&models.Movie{},
 		&models.Halls{},
 		&models.Seats{},
+		&models.Shows{},
 	}
 }
 

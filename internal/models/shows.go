@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/repository"
+	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/repository/postgres"
 	"github.com/shopspring/decimal"
 )
 
@@ -18,13 +20,40 @@ type Shows struct {
 	StartDate Date            `json:"start_date" gorm:"type:Date;not null"`
 	StartTime ShowTime        `json:"start_time" gorm:"type:Time;not null"`
 	EndTime   ShowTime        `json:"end_time" gorm:"type:Time;not null"`
-	Price     decimal.Decimal `json:"price" gorm:"not null"`
+	Price     decimal.Decimal `json:"price" gorm:"type:Decimal(10, 2);not null"`
 	CreatedAt time.Time       `json:"created_at" gorm:"autoCreateTime"`
 	UpdatedAt time.Time       `json:"updated_at" gorm:"autoUpdateTime"`
 	Movie     Movie           `json:"movie" gorm:"foreignKey:MovieID;references:ID"`
 	Hall      Halls           `json:"hall" gorm:"foreignKey:HallID;references:ID"`
 }
 
+func (s *Shows) CreateMovieShows(db *repository.Database) error {
+
+	h := Halls{ID: s.HallID}
+	hall, err := h.GetHall(db)
+	if err != nil {
+		return nil
+	}
+
+	m := Movie{ID: s.MovieID}
+
+	movie, err := m.GetMovieByID(db, m.ID)
+	if err != nil {
+		return err
+	}
+
+	s.Hall = *hall
+	s.Movie = *movie
+
+	err = postgres.Create(db.Pdb.DB, s)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+
+}
 func (s *ShowTime) Scan(value interface{}) error {
 
 	if t, ok := value.(time.Time); ok {

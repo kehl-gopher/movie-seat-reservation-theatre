@@ -42,3 +42,26 @@ func CreateHallSeat(db *repository.Database, config *env.Config, hallName string
 	}
 	return data, statusCode, nil
 }
+
+func ValidateHallUpdateInputs(hallName string, rows, numberOfSeats int) error {
+	v := utility.NewValidationError()
+
+	if rows <= 0 {
+		v.AddValidationError("number_of_rows", "field is required")
+	}
+	if numberOfSeats <= 0 {
+		v.AddValidationError("number_of_seats", "field is required")
+	}
+
+	if v.CheckError() {
+		return v
+	}
+	return nil
+}
+
+// TODO implement user perform update on seats
+func UpdateHallSeat(db *repository.Database, config *env.Config, hallID string, hallName *string, rows, numberOfSeats *int) (*models.Halls, int, error) {
+
+	// get hall
+	return nil, 0, nil
+}

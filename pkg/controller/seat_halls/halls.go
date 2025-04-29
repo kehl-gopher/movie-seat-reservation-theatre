@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/env"
 	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/repository"
 	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/utility"
@@ -43,4 +44,28 @@ func (h *SeatHallBase) CreateSeatHall(c *gin.Context) {
 	}
 	resp := utility.BuildSuccessResponse(statusCode, "created successfully", data, nil)
 	c.JSON(statusCode, resp)
+}
+
+func (h *SeatHallBase) UpdateSeatHall(c *gin.Context) {
+
+	hallID := utility.GetParams(c, "hallID")
+
+	if _, err := uuid.Parse(hallID); err != nil {
+		resp := utility.BuildErrorResponse(http.StatusBadRequest, err, "invalid uuid ID parsed", http.StatusText(http.StatusBadRequest))
+		c.JSON(http.StatusBadRequest, resp)
+		return
+	}
+	var SeatHall struct {
+		HallName      *string `json:"hall_name"`
+		RowNumber     *string `json:"row_number"`
+		NumberOfSeats *int    `json:"number_of_seats"`
+	}
+
+	err := c.ShouldBindJSON(&SeatHall)
+	if err != nil {
+		resp := utility.BuildErrorResponse(http.StatusBadRequest, err, "bad error response", http.StatusText(http.StatusBadRequest))
+		c.JSON(http.StatusBadRequest, resp)
+		return
+	}
+
 }

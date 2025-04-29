@@ -130,6 +130,15 @@ func (h *Halls) CreateHallSeat(db *repository.Database, config *env.Config, rowC
 	return hall, http.StatusCreated, err
 }
 
+func (h *Halls) GetHall(db *repository.Database) (*Halls, error) {
+	hall := &Halls{}
+	err := postgres.SelectById(db.Pdb.DB, h.ID, h, hall)
+	if err != nil {
+		return nil, err
+	}
+	return hall, nil
+}
+
 func (s SeatStatus) MarshalJSON() ([]byte, error) {
 	str := string(s)
 	return json.Marshal(str)
