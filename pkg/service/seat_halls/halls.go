@@ -61,6 +61,19 @@ func GetAllHalls(db *repository.Database, config *env.Config) ([]models.Halls, i
 	return halls, http.StatusCreated, nil
 }
 
+func GetHallDetails(db *repository.Database, config *env.Config, hallId string) (models.Halls, int, error) {
+
+	h := models.Halls{ID: hallId}
+
+	hall, err := h.GetAllDetails(db)
+	if err != nil {
+		if errors.Is(postgres.ErrNoRecordFound, err) {
+			return models.Halls{}, http.StatusNotFound, err
+		}
+	}
+	return hall, http.StatusOK, nil
+}
+
 // sheeesh so dumb he could not figure out how to handle... validation logic for simple hall updates... FUCK...
 func ValidateHallUpdateInputs(hallName string, rows, numberOfSeats int) error {
 	v := utility.NewValidationError()

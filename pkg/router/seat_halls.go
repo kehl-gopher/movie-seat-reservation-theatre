@@ -16,5 +16,6 @@ func SeatHallRoutes(r *gin.Engine, db *repository.Database, config *env.Config) 
 	{
 		seatHall.POST("/", hallBase.CreateSeatHall)
 		seatHall.GET("/", hallBase.GetAllHalls)
+		seatHall.GET("/:hallId", hallBase.GetHall)
 	}
 }

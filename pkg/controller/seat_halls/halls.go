@@ -57,6 +57,25 @@ func (h *SeatHallBase) GetAllHalls(c *gin.Context) {
 	c.JSON(statusCode, resp)
 }
 
+func (h *SeatHallBase) GetHall(c *gin.Context) {
+	hallId := utility.GetParams(c, "hallId")
+
+	if _, err := uuid.Parse(hallId); err != nil {
+		resp := utility.BuildErrorResponse(http.StatusBadRequest, err, "invlid uuid parse", http.StatusText(http.StatusBadRequest))
+		c.JSON(http.StatusBadRequest, resp)
+		return
+	}
+
+	data, statusCode, err := seathalls.GetHallDetails(h.DB, h.Config, hallId)
+	if err != nil {
+		resp := utility.BuildErrorResponse(statusCode, err, "", http.StatusText(statusCode))
+		c.JSON(statusCode, resp)
+		return
+	}
+	resp := utility.BuildSuccessResponse(statusCode, "created successfully", data, nil)
+	c.JSON(statusCode, resp)
+}
+
 // TODO: Implement admin updating seat hall later stupid fuck
 func (h *SeatHallBase) UpdateSeatHall(c *gin.Context) {
 

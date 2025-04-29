@@ -142,6 +142,20 @@ func (h *Halls) GetAllHalls(db *repository.Database) ([]Halls, error) {
 	return halls, nil
 }
 
+// for some fucked up reason I decide to stop referencing
+// I'll refactor the code base to not return object reference anymore... if i'm not too lazy I guess... LOL I can never be lazy
+// TODO; implement a cursor pagination for seats...
+
+func (h *Halls) GetAllDetails(db *repository.Database) (Halls, error) {
+	hall := Halls{}
+	tx := postgres.Preload(db.Pdb.DB, h, `Seats`)
+	err := postgres.SelectById(tx, h.ID, h, &hall)
+	if err != nil {
+		return hall, err
+	}
+	return hall, nil
+}
+
 func (h *Halls) GetHall(db *repository.Database) (*Halls, error) {
 	hall := &Halls{}
 	err := postgres.SelectById(db.Pdb.DB, h.ID, h, hall)
