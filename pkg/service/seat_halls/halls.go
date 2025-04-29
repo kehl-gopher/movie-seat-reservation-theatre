@@ -75,7 +75,23 @@ func GetHallDetails(db *repository.Database, config *env.Config, hallId string) 
 }
 
 func DeleteHalls(db *repository.Database, hallId string) (int, error) {
-	return 0, nil
+
+	h := models.Halls{ID: hallId}
+
+	hall, err := h.GetHall(db)
+	if err != nil {
+		if err.Error() == "theatre hall not found" {
+			return http.StatusNotFound, err
+		}
+		return http.StatusInternalServerError, err
+	}
+	
+	
+	err = hall.DeleteHall(db)
+	if err != nil {
+		return http.StatusInternalServerError, err
+	}
+	return http.StatusNoContent, nil
 }
 
 // sheeesh so dumb he could not figure out how to handle... validation logic for simple hall updates... FUCK...

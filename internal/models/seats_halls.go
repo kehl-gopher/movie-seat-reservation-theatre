@@ -193,6 +193,11 @@ func (h *Halls) GetHall(db *repository.Database) (*Halls, error) {
 	return hall, nil
 }
 
+func (h *Halls) DeleteHall(db *repository.Database) error {
+	err := postgres.DeleteSingleRecord(db.Pdb.DB, "id = ?", h, h.ID)
+	return err
+}
+
 func (s SeatStatus) MarshalJSON() ([]byte, error) {
 	str := string(s)
 	return json.Marshal(str)
