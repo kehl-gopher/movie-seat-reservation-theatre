@@ -52,6 +52,13 @@ func (s *ShowBase) CreateShows(c *gin.Context) {
 	statusCode, err := shows.CreateShow(s.DB, movieId.String(), hallId.String(), Shows.Price, Shows.StartTime, Shows.EndTime, Shows.StartDate)
 
 	if err != nil {
+		if err.Error() == "validation error" {
+			v := err.(*utility.ValidationError)
+			resp := utility.ValidationErrorResponse(v.Errors, v)
+			c.JSON(statusCode, resp)
+			return
+
+		}
 		resp := utility.BuildErrorResponse(statusCode, err, "", http.StatusText(statusCode))
 		c.JSON(statusCode, resp)
 		return

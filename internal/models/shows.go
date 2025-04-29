@@ -4,6 +4,7 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/repository"
@@ -20,8 +21,8 @@ type Shows struct {
 	MovieID   string          `json:"movie_id" gorm:"not null"`
 	HallID    string          `json:"hall_id" gorm:"not null"`
 	StartDate Date            `json:"start_date" gorm:"type:Date;not null"`
-	StartTime ShowTime        `json:"start_time" gorm:"type:Time;not null"`
-	EndTime   ShowTime        `json:"end_time" gorm:"type:Time;not null"`
+	StartTime ShowTime        `json:"start_time" gorm:"type:Time WITHOUT TIME ZONE;not null"`
+	EndTime   ShowTime        `json:"end_time" gorm:"type:Time WITHOUT TIME ZONE;not null"`
 	Price     decimal.Decimal `json:"price" gorm:"type:Decimal(10, 2);not null"`
 	CreatedAt time.Time       `json:"created_at" gorm:"autoCreateTime"`
 	UpdatedAt time.Time       `json:"updated_at" gorm:"autoUpdateTime"`
@@ -37,20 +38,17 @@ func (s *Shows) BeforeCreate(tx *gorm.DB) error {
 func (s *Shows) CreateMovieShows(db *repository.Database) error {
 
 	h := Halls{ID: s.HallID}
-	hall, err := h.GetHall(db)
-	if err != nil {
-		return nil
-	}
-
-	m := Movie{ID: s.MovieID}
-
-	movie, err := m.GetMovieByID(db, m.ID)
+	_, err := h.GetHall(db)
 	if err != nil {
 		return err
 	}
 
-	s.Hall = *hall
-	s.Movie = *movie
+	m := Movie{ID: s.MovieID}
+
+	_, err = m.GetMovieByID(db, m.ID)
+	if err != nil {
+		return err
+	}
 
 	err = postgres.Create(db.Pdb.DB, s)
 
@@ -64,14 +62,14 @@ func (s *Shows) CreateMovieShows(db *repository.Database) error {
 func (s *ShowTime) Scan(value interface{}) error {
 
 	if t, ok := value.(time.Time); ok {
-		t, err := time.Parse("15:04:05", t.Format("15:04:05"))
+		t, err := time.Parse("15:04", t.Format("15:04"))
 		if err != nil {
 			return err
 		}
 		*s = ShowTime(t)
 		return nil
 	} else if t, ok := value.([]byte); ok {
-		t, err := time.Parse("15:04:05", string(t))
+		t, err := time.Parse("15:04", string(t))
 		if err != nil {
 			return err
 		}
@@ -82,20 +80,19 @@ func (s *ShowTime) Scan(value interface{}) error {
 }
 
 func (s ShowTime) Value() (driver.Value, error) {
-	return time.Time(s).Format("15:04:05"), nil
+	return time.Time(s).Format("15:04"), nil
 }
 
 func (s ShowTime) MarshalJSON() ([]byte, error) {
 	t := time.Time(s)
-	return json.Marshal(t.Format("15:04:05"))
+	return json.Marshal(t.Format("15:04"))
 }
 
 func (s *ShowTime) UnmarshalJSON(data []byte) error {
 	var t time.Time
-	if err := json.Unmarshal(data, &t); err != nil {
-		return err
-	}
-	t, err := time.Parse("15:04:05", t.Format("15:04:05"))
+	tie := string(data)
+	tie = strings.Trim(tie, "\"")
+	t, err := time.Parse("15:04", tie)
 	if err != nil {
 		return err
 	}

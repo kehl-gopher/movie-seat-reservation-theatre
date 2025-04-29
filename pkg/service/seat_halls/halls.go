@@ -68,7 +68,7 @@ func GetHallDetails(db *repository.Database, config *env.Config, hallId string) 
 	hall, err := h.GetAllDetails(db)
 	if err != nil {
 		if errors.Is(postgres.ErrNoRecordFound, err) {
-			return models.Halls{}, http.StatusNotFound, err
+			return models.Halls{}, http.StatusNotFound, errors.New("theatre hall not found")
 		}
 	}
 	return hall, http.StatusOK, nil

@@ -1,13 +1,11 @@
 package shows
 
 import (
-	"errors"
 	"net/http"
 	"time"
 
 	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/models"
 	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/repository"
-	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/repository/postgres"
 	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/utility"
 	"github.com/shopspring/decimal"
 )
@@ -62,7 +60,7 @@ func CreateShow(db *repository.Database, movieId, hallId string, price decimal.D
 	err = shows.CreateMovieShows(db)
 
 	if err != nil {
-		if errors.Is(postgres.ErrNoRecordFound, err) {
+		if err.Error() == "theatre hall not found" || err.Error() == "movie not found" {
 			return http.StatusNotFound, err
 		}
 
