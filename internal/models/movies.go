@@ -149,9 +149,9 @@ func (m *Movie) GetMovieByID(db *repository.Database, id string) (*Movie, error)
 }
 
 // TODO: get all movies with paginations paginations
-func (m *Movie) GetAllMoviesWithPagination(db *repository.Database, page, limit uint, config *env.Config) ([]MovieResponse, postgres.PaginationResponse, error) {
+func (m *Movie) GetAllMoviesWithPagination(db *repository.Database, page, limit uint, config *env.Config, args ...interface{}) ([]MovieResponse, postgres.PaginationResponse, error) {
 	var movies []MovieResponse
-
+	
 	pag, err := postgres.SelectAllRecordWithPagination(db.Pdb.DB, "", "desc", "created_at", &Movie{}, &movies, limit, page)
 
 	if err != nil {

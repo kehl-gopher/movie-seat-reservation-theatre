@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/env"
 	"github.com/kehl-gopher/movie-seat-reservation-theatre/internal/models"
@@ -99,11 +100,35 @@ func GetMovieByID(db *repository.Database, id string) (*models.Movie, int, error
 	return mov, http.StatusOK, nil
 }
 
-func GetAllMovies(db *repository.Database, offset, limit uint, config *env.Config) ([]models.MovieResponse, int, postgres.PaginationResponse, error) {
+func cleanParams(search, date string, genres []string) (searchTerm string, genre string, release_date string) {
+	if search != "" {
+		searchTerm = strings.TrimLeft(search, "\"")
+	} else {
+		searchTerm = ""
+	}
+	if date != "" {
+		date, _ := time.Parse("2006-01-02", date)
+		release_date = date.Format("2006-01-02")
+	} else {
+		release_date = ""
+	}
+	if genres != nil {
+		for ind, gen := range genres {
+			genres[ind] = strings.Trim(strings.Title(gen), "\"")
+		}
+		genre = strings.Join(genres, ",")
+	} else {
+		genre = ""
+	}
+
+	return searchTerm, genre, release_date
+}
+func GetAllMovies(db *repository.Database, offset, limit uint, config *env.Config, search string, date string, genre []string) ([]models.MovieResponse, int, postgres.PaginationResponse, error) {
 
 	movie := models.Movie{}
 
-	mov, pag, err := movie.GetAllMoviesWithPagination(db, offset, limit, config)
+	search, genres, datet := cleanParams(search, date, genre)
+	mov, pag, err := movie.GetAllMoviesWithPagination(db, offset, limit, config, search, datet, genres)
 
 	if err != nil {
 		if err.Error() == "no movies found" {

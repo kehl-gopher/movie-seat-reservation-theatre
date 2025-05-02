@@ -120,6 +120,36 @@ func SelectAllRecordWithPagination(db *gorm.DB, query string, orderBy, order str
 	}, nil
 }
 
+func SelectRecordsWithRawSql(db *gorm.DB, query string, offset, limit uint, model interface{}, receiver interface{}, args ...interface{}) (PaginationResponse, error) {
+	var count int64
+
+	pagination := GetPagination(offset, limit)
+
+	err := db.Model(model).Count(&count).Error
+	if err != nil {
+		return PaginationResponse{
+			Page:  pagination.Offset,
+			Limit: pagination.Limit,
+		}, err
+	}
+
+	off := int(pagination.Limit) * (int(pagination.Offset) - 1)
+
+	res := db.Raw(query, args, off, pagination.Limit).Scan(receiver)
+	if res.Error != nil {
+		fmt.Println(err)
+		return PaginationResponse{}, err
+	}
+	nextPage, prevPage := buildPrevNextPage(pagination, uint(count)/pagination.Limit)
+	return PaginationResponse{
+		Page:      pagination.Offset,
+		Limit:     pagination.Limit,
+		TotalPage: uint(count) / pagination.Limit,
+		NextPage:  nextPage,
+		PrevPage:  prevPage,
+	}, nil
+}
+
 func SelectMultipleRecord(db *gorm.DB, query string, model interface{}, receiver interface{}, args ...interface{}) error {
 	res := db.Model(model).Where(query, args...).Scan(receiver)
 	if res.Error != nil {

@@ -1,6 +1,7 @@
 package movies
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -66,9 +67,19 @@ func (m *MovieBase) GetMovie(c *gin.Context) {
 
 func (m *MovieBase) GetMovies(c *gin.Context) {
 
+	// filter features for GetMovies
+	// release_date
+	// genres
+	// show startdate
+
 	limit, offset := utility.GetPaginationParams(c)
 
-	movies, statusCode, pag, err := movies.GetAllMovies(m.DB, limit, offset, m.Config)
+	searchTerm := utility.GetQuery(c, "search")
+	fmt.Println(searchTerm)
+	genres, _ := c.GetQueryArray("genres")
+	release_date := utility.GetQuery(c, "release_date")
+
+	movies, statusCode, pag, err := movies.GetAllMovies(m.DB, limit, offset, m.Config, searchTerm, release_date, genres)
 
 	if err != nil {
 		resp := utility.BuildErrorResponse(statusCode, err, "error getting movies", http.StatusText(statusCode))

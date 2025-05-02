@@ -27,7 +27,7 @@ type Shows struct {
 	CreatedAt time.Time       `json:"created_at" gorm:"autoCreateTime"`
 	UpdatedAt time.Time       `json:"updated_at" gorm:"autoUpdateTime"`
 	Movie     *Movie          `json:"movie,omitempty" gorm:"foreignKey:MovieID;references:ID"`
-	Hall      Halls           `json:"hall" gorm:"foreignKey:HallID;references:ID"`
+	Hall      *Halls          `json:"hall,omitempty" gorm:"foreignKey:HallID;references:ID"`
 }
 
 func (s *Shows) BeforeCreate(tx *gorm.DB) error {
